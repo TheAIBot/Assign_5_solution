@@ -7,16 +7,17 @@ namespace Assign_5_solution
     {
         static void Main(string[] args)
         {
-            int numbersCount = int.Parse(Console.ReadLine());
-            string numbersAsString = Console.ReadLine();
-            int[] numbers = new int[numbersCount];
+            //int numbersCount = int.Parse(Console.ReadLine());
+            //string numbersAsString = Console.ReadLine();
+            //int[] numbers = new int[numbersCount];
 
-            int index = 0;
-            foreach (var split in numbersAsString.Split(' '))
-            {
-                numbers[index++] = int.Parse(split);
-            }
+            //int index = 0;
+            //foreach (var split in numbersAsString.Split(' '))
+            //{
+            //    numbers[index++] = int.Parse(split);
+            //}
 
+            int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8 };
             var result = Solve(numbers);
 
             Console.WriteLine(result.number);
@@ -25,7 +26,7 @@ namespace Assign_5_solution
 
         public static (int number, int newNumber) Solve(int[] numbers)
         {
-            Dictionary<int, Node> sums = new Dictionary<int, Node>();
+            HashSet<int> sums = new HashSet<int>();
             Dictionary<int, HashSet<int>> sumLinks = new Dictionary<int, HashSet<int>>();
             bool[] usedNumbers = new bool[numbers.Length];
             Stack<int> sumNumbers = new Stack<int>();
@@ -43,36 +44,17 @@ namespace Assign_5_solution
                 CreateAllSums(sums, sumLinks, numbers, usedNumbers, sumNumbers, 0, i);
             }
 
-            return CreateCollisionAvoidanceArray(sums, sumLinks, numbers);
+            //Console.WriteLine(sums.Count);
+            //throw new Exception();
+
+            int[] sumsArray = new int[sums.Count];
+            sums.CopyTo(sumsArray);
+            Array.Sort(sumsArray);
+
+            return CreateCollisionAvoidanceArray(sumsArray, sumLinks, numbers);
         }
 
-        internal class Node
-        {
-            public int Value;
-            public Node Less;
-            public Node More;
-            public int Collisions;
-
-            internal Node(int value)
-            {
-                this.Value = value;
-                this.Less = null;
-                this.More = null;
-                this.Collisions = 0;
-            }
-
-            public int GetHowManyLess()
-            {
-                return Less == null ? 0 : Less.GetHowManyLess() + 1;
-            }
-
-            public int GetHowManyMore()
-            {
-                return More == null ? 0 : More.GetHowManyMore() + 1;
-            }
-        }
-
-        private static void CreateAllSums(Dictionary<int, Node> sums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers, bool[] usedNumbers, Stack<int> sumNumbers, int sum, int length)
+        private static void CreateAllSums(HashSet<int> sums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers, bool[] usedNumbers, Stack<int> sumNumbers, int sum, int length)
         {
             if (sumNumbers.Count == length)
             {
@@ -81,28 +63,7 @@ namespace Assign_5_solution
                     sumLinks[num].Add(sum);
                 }
 
-                Node sumNode;
-                if (!sums.TryGetValue(sum, out sumNode))
-                {
-                    sumNode = new Node(sum);
-                    sums[sum] = sumNode;
-                }
-                else
-                {
-                    sumNode.Collisions++;
-                }
-
-                if (sums.TryGetValue(sum - 1, out Node less))
-                {
-                    sumNode.Less = less;
-                    less.More = sumNode;
-                }
-
-                if (sums.TryGetValue(sum + 1, out Node more))
-                {
-                    sumNode.More = more;
-                    more.Less = sumNode;
-                }
+                sums.Add(sum);
                 return;
             }
 
@@ -126,7 +87,7 @@ namespace Assign_5_solution
             }
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(Dictionary<int, Node> sums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers)
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers)
         {
             int maxCollisions = int.MinValue;
             foreach (var number in numbers)
@@ -142,45 +103,34 @@ namespace Assign_5_solution
                     continue;
                 }
 
-                int maxLinksLess = 0;
-                int maxLinksMore = 0;
+                int maxLinkSum = number;
 
-                while (true)
+                int[] marked = new int[sortedSums[sortedSums.Length - 1] + 1];
+
+                foreach (var sum in sumLinks[number])
                 {
-                    bool changed = false;
-                    foreach (var sum in sumLinks[number])
+                    foreach (var num in sortedSums)
                     {
-                        int linksLess = 0;
-                        int linksMore = 0;
-
-                        if (sums.TryGetValue(sum - maxLinksLess, out Node lessNode))
+                        int index = maxLinkSum + (num - sum);
+                        if (index >= 0)
                         {
-                            linksLess = lessNode.GetHowManyLess();
+                            marked[index]++;
                         }
-                        if (sums.TryGetValue(sum + maxLinksMore, out Node moreNode))
-                        {
-                            linksMore = moreNode.GetHowManyMore();
-                        }
-
-                        if (linksLess > 0)
-                        {
-                            maxLinksLess += linksLess;
-                            changed = true;
-                        }
-                        if (linksMore > 0)
-                        {
-                            maxLinksMore += linksMore;
-                            changed = true;
-                        }
-                    }
-
-                    if (!changed)
-                    {
-                        fwesa.Add((number, number - maxLinksLess));
-                        fwesa.Add((number, number + maxLinksMore));
-                        break;
                     }
                 }
+
+                int newBestIndex = -1;
+                int bestCollisionsAvoided = int.MaxValue;
+                for (int i = 0; i < marked.Length; i++)
+                {
+                    if (marked[i] < bestCollisionsAvoided)
+                    {
+                        newBestIndex = i;
+                        bestCollisionsAvoided = marked[i];
+                    }
+                }
+
+                fwesa.Add((number, newBestIndex));
             }
 
             int bestNumber = int.MaxValue;
