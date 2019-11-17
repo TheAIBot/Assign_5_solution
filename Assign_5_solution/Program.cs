@@ -18,7 +18,8 @@ namespace Assign_5_solution
             //    numbers[index++] = int.Parse(split);
             //}
 
-            int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23 };
+            int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23 };
+            Console.WriteLine(numbers.Length);
             Stopwatch watch = new Stopwatch();
             watch.Start();
             var result = Solve(numbers);
@@ -37,7 +38,8 @@ namespace Assign_5_solution
             for (int i = 1; i <= numbers.Length; i++)
             {
                 //CreateAllSums(sums, sumLinks, numbers, usedNumbers, sumNumbers, 0, i);
-                CreateAllSums(numbers, i, 0, 0, sums, sumLinks);
+                //CreateAllSums(numbers, i, 0, 0, sums, sumLinks);
+                CreateAllSums(numbers, i, sums);
             }
 
             //Console.WriteLine(sums.Count);
@@ -54,7 +56,7 @@ namespace Assign_5_solution
                 sumLinksReal[numbers[i]] += sumLinks[i];
             }
 
-            return CreateCollisionAvoidanceArray(sumsArray, sumLinksReal, numbers);
+            return CreateCollisionAvoidanceArray(sumsArray, numbers);
         }
 
         private static void CreateAllSums(HashSet<int> sums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers, bool[] usedNumbers, Stack<int> sumNumbers, int sum, int length)
@@ -105,22 +107,55 @@ namespace Assign_5_solution
             return sumsCreated + CreateAllSums(numbers, length, sum, numberIndex + 1, sums, sumLinks);
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, Dictionary<int, int> sumLinks, int[] numbers)
+        static void CreateAllSums(int[] numbers, int length, HashSet<int> sums)
         {
-            int maxCollisions = int.MinValue;
-            foreach (var number in numbers)
+            int sum = 0;
+            for (int i = 0; i < length; i++)
             {
-                maxCollisions = Math.Max(maxCollisions, sumLinks[number]);
+                sum += numbers[i];
             }
 
-            List<(int number, int newNumber)> fwesa = new List<(int number, int newNumber)>();
+            // dp[i][j] would be true if arr[0..i-1]  
+            // has a subset with sum equal to j. 
+            bool[,] dp = new bool[length + 1, sum + 1];
+
+            // There is always a subset with 0 sum 
+            for (int i = 0; i <= length; i++)
+            {
+                dp[i, 0] = true;
+            }
+
+            // Fill dp[][] in bottom up manner 
+            for (int i = 1; i <= length; i++)
+            {
+                dp[i, numbers[i - 1]] = true;
+                for (int j = 1; j <= sum; j++)
+                {
+                    // Sums that were achievable 
+                    // without current array element 
+                    if (dp[i - 1, j])
+                    {
+                        dp[i, j] = true;
+                        dp[i, j + numbers[i - 1]] = true;
+                    }
+                }
+            }
+
+            // Print last row elements 
+            for (int j = 0; j <= sum; j++)
+            {
+                if (dp[length, j])
+                {
+                    sums.Add(j);
+                }
+            }
+        }
+
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, int[] numbers)
+        {
+            List<(int number, int newNumber, int diff)> fwesa = new List<(int number, int newNumber, int diff)>();
             foreach (var number in numbers)
             {
-                if (sumLinks[number] != maxCollisions)
-                {
-                    continue;
-                }
-
                 int maxLinkSum = number;
 
                 int[] marked = new int[sortedSums[sortedSums.Length - 1] + 1];
@@ -145,9 +180,10 @@ namespace Assign_5_solution
                     }
                 }
 
-                fwesa.Add((number, newBestIndex));
+                fwesa.Add((number, newBestIndex, marked[maxLinkSum] - marked[newBestIndex]));
             }
 
+            int bestDiff = int.MinValue;
             int bestNumber = int.MaxValue;
             int bestNewNumber = int.MaxValue;
 
@@ -158,17 +194,28 @@ namespace Assign_5_solution
                     continue;
                 }
 
-                if (item.number < bestNumber)
+                if (item.diff > bestDiff)
                 {
+                    bestDiff = item.diff;
                     bestNumber = item.number;
                     bestNewNumber = item.newNumber;
                 }
-                else if (item.number == bestNumber)
+                else if (item.diff == bestDiff)
                 {
-                    if (item.newNumber < bestNewNumber)
+                    if (item.number < bestNumber)
                     {
+                        bestDiff = item.diff;
                         bestNumber = item.number;
                         bestNewNumber = item.newNumber;
+                    }
+                    else if (item.number == bestNumber)
+                    {
+                        if (item.newNumber < bestNewNumber)
+                        {
+                            bestDiff = item.diff;
+                            bestNumber = item.number;
+                            bestNewNumber = item.newNumber;
+                        }
                     }
                 }
             }
