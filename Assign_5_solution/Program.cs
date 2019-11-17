@@ -10,22 +10,22 @@ namespace Assign_5_solution
     {
         static void Main(string[] args)
         {
-            //int numbersCount = int.Parse(Console.ReadLine());
-            //string numbersAsString = Console.ReadLine();
-            //int[] numbers = new int[numbersCount];
+            int numbersCount = int.Parse(Console.ReadLine());
+            string numbersAsString = Console.ReadLine();
+            int[] numbers = new int[numbersCount];
 
-            //int index = 0;
-            //foreach (var split in numbersAsString.Split(' '))
-            //{
-            //    numbers[index++] = int.Parse(split);
-            //}
+            int index = 0;
+            foreach (var split in numbersAsString.Split(' '))
+            {
+                numbers[index++] = int.Parse(split);
+            }
 
             //int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23 };
-            int[] numbers = new int[1000];
-            for (int i = 0; i < numbers.Length; i++)
-            {
-                numbers[i] = 20_000;
-            }
+            //int[] numbers = new int[1000];
+            //for (int i = 0; i < numbers.Length; i++)
+            //{
+            //    numbers[i] = 20_000;
+            //}
 
 
             Console.WriteLine(numbers.Length);
@@ -42,80 +42,14 @@ namespace Assign_5_solution
         public static (int number, int newNumber) Solve(int[] numbers)
         {
             HashSet<int> sums = new HashSet<int>();
-            int[] sumLinks = new int[numbers.Length];
-
-            //for (int i = 1; i <= numbers.Length; i++)
-            //{
-                //CreateAllSums(sums, sumLinks, numbers, usedNumbers, sumNumbers, 0, i);
-                //CreateAllSums(numbers, i, 0, 0, sums, sumLinks);
-                CreateAllSums(numbers, sums);
-            //}
-
-            //Console.WriteLine(sums.Count);
-            //throw new Exception();
+            CreateAllSums(numbers, sums);
 
             int[] sumsArray = new int[sums.Count];
             sums.CopyTo(sumsArray);
             Array.Sort(sumsArray);
 
-            Dictionary<int, int> sumLinksReal = new Dictionary<int, int>();
-            for (int i = 0; i < numbers.Length; i++)
-            {
-                sumLinksReal.TryAdd(numbers[i], 0);
-                sumLinksReal[numbers[i]] += sumLinks[i];
-            }
-
             return CreateCollisionAvoidanceArray(sumsArray, numbers);
         }
-
-        private static void CreateAllSums(HashSet<int> sums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers, bool[] usedNumbers, Stack<int> sumNumbers, int sum, int length)
-        {
-            if (sumNumbers.Count == length)
-            {
-                foreach (var num in sumNumbers)
-                {
-                    sumLinks[num].Add(sum);
-                }
-
-                sums.Add(sum);
-                return;
-            }
-
-            for (int i = 0; i < numbers.Length; i++)
-            {
-                if (usedNumbers[i])
-                {
-                    continue;
-                }
-
-                int newNumber = numbers[i];
-                int newSum = sum + newNumber;
-
-                usedNumbers[i] = true;
-                sumNumbers.Push(newNumber);
-
-                CreateAllSums(sums, sumLinks, numbers, usedNumbers, sumNumbers, newSum, length);
-
-                sumNumbers.Pop();
-                usedNumbers[i] = false;
-            }
-        }
-
-        private static int CreateAllSums(int[] numbers, int length, int sum, int numberIndex, HashSet<int> sums, int[] sumLinks)
-        {
-            if (numberIndex == length)
-            {
-                sums.Add(sum);
-                return 1;
-            }
-
-            int sumsCreated = CreateAllSums(numbers, length, sum + numbers[numberIndex], numberIndex + 1, sums, sumLinks);
-            sumLinks[numberIndex] += sumsCreated;
-
-
-            return sumsCreated + CreateAllSums(numbers, length, sum, numberIndex + 1, sums, sumLinks);
-        }
-
         static void CreateAllSums(int[] numbers, HashSet<int> sums)
         {
             int numbersSum = 0;
@@ -158,13 +92,11 @@ namespace Assign_5_solution
             List<(int number, int newNumber, int diff)> fwesa = new List<(int number, int newNumber, int diff)>();
             foreach (var number in numbers.Distinct())
             {
-                int maxLinkSum = number;
-
                 int[] marked = new int[sortedSums[sortedSums.Length - 1] + 1];
 
                 foreach (var sum in sortedSums)
                 {
-                    int index = sum - maxLinkSum;
+                    int index = sum - number;
                     if (index >= 0)
                     {
                         marked[index]++;
@@ -182,7 +114,7 @@ namespace Assign_5_solution
                     }
                 }
 
-                fwesa.Add((number, newBestIndex, marked[maxLinkSum] - marked[newBestIndex]));
+                fwesa.Add((number, newBestIndex, marked[number] - marked[newBestIndex]));
             }
 
             int bestDiff = int.MinValue;
