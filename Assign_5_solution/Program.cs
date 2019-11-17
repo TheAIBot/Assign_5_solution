@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Assign_5_solution
 {
@@ -17,8 +18,12 @@ namespace Assign_5_solution
             //    numbers[index++] = int.Parse(split);
             //}
 
-            int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8 };
+            int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23 };
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
             var result = Solve(numbers);
+            watch.Stop();
+            Console.WriteLine($"Time: {watch.ElapsedMilliseconds}");
 
             Console.WriteLine(result.number);
             Console.WriteLine(result.newNumber);
@@ -27,22 +32,12 @@ namespace Assign_5_solution
         public static (int number, int newNumber) Solve(int[] numbers)
         {
             HashSet<int> sums = new HashSet<int>();
-            Dictionary<int, HashSet<int>> sumLinks = new Dictionary<int, HashSet<int>>();
-            bool[] usedNumbers = new bool[numbers.Length];
-            Stack<int> sumNumbers = new Stack<int>();
-
-            for (int i = 0; i < numbers.Length; i++)
-            {
-                if (!sumLinks.ContainsKey(numbers[i]))
-                {
-                    sumLinks[numbers[i]] = new HashSet<int>();
-                }
-            }
+            int[] sumLinks = new int[numbers.Length];
 
             for (int i = 1; i <= numbers.Length; i++)
             {
                 //CreateAllSums(sums, sumLinks, numbers, usedNumbers, sumNumbers, 0, i);
-                CreateAllSums(numbers, i, 0, 0, sums, sumLinks, sumNumbers);
+                CreateAllSums(numbers, i, 0, 0, sums, sumLinks);
             }
 
             //Console.WriteLine(sums.Count);
@@ -52,7 +47,14 @@ namespace Assign_5_solution
             sums.CopyTo(sumsArray);
             Array.Sort(sumsArray);
 
-            return CreateCollisionAvoidanceArray(sumsArray, sumLinks, numbers);
+            Dictionary<int, int> sumLinksReal = new Dictionary<int, int>();
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                sumLinksReal.TryAdd(numbers[i], 0);
+                sumLinksReal[numbers[i]] += sumLinks[i];
+            }
+
+            return CreateCollisionAvoidanceArray(sumsArray, sumLinksReal, numbers);
         }
 
         private static void CreateAllSums(HashSet<int> sums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers, bool[] usedNumbers, Stack<int> sumNumbers, int sum, int length)
@@ -88,41 +90,33 @@ namespace Assign_5_solution
             }
         }
 
-        private static void CreateAllSums(int[] numbers, int length, int sum, int numberIndex, HashSet<int> sums, Dictionary<int, HashSet<int>> sumLinks, Stack<int> sumNumbers)
+        private static int CreateAllSums(int[] numbers, int length, int sum, int numberIndex, HashSet<int> sums, int[] sumLinks)
         {
             if (numberIndex == length)
             {
-                foreach (var num in sumNumbers)
-                {
-                    sumLinks[num].Add(sum);
-                }
                 sums.Add(sum);
-                return;
+                return 1;
             }
 
-            int newSum = sum + numbers[numberIndex];
-            sumNumbers.Push(numbers[numberIndex]);
-
-            CreateAllSums(numbers, length, sum + numbers[numberIndex], numberIndex + 1, sums, sumLinks, sumNumbers);
-
-            sumNumbers.Pop();
+            int sumsCreated = CreateAllSums(numbers, length, sum + numbers[numberIndex], numberIndex + 1, sums, sumLinks);
+            sumLinks[numberIndex] += sumsCreated;
 
 
-            CreateAllSums(numbers, length, sum, numberIndex + 1, sums, sumLinks, sumNumbers);
+            return sumsCreated + CreateAllSums(numbers, length, sum, numberIndex + 1, sums, sumLinks);
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers)
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, Dictionary<int, int> sumLinks, int[] numbers)
         {
             int maxCollisions = int.MinValue;
             foreach (var number in numbers)
             {
-                maxCollisions = Math.Max(maxCollisions, sumLinks[number].Count);
+                maxCollisions = Math.Max(maxCollisions, sumLinks[number]);
             }
 
             List<(int number, int newNumber)> fwesa = new List<(int number, int newNumber)>();
             foreach (var number in numbers)
             {
-                if (sumLinks[number].Count != maxCollisions)
+                if (sumLinks[number] != maxCollisions)
                 {
                     continue;
                 }
@@ -131,15 +125,12 @@ namespace Assign_5_solution
 
                 int[] marked = new int[sortedSums[sortedSums.Length - 1] + 1];
 
-                foreach (var sum in sumLinks[number])
+                foreach (var sum in sortedSums)
                 {
-                    foreach (var num in sortedSums)
+                    int index = sum - maxLinkSum;
+                    if (index >= 0)
                     {
-                        int index = maxLinkSum + (num - sum);
-                        if (index >= 0)
-                        {
-                            marked[index]++;
-                        }
+                        marked[index]++;
                     }
                 }
 
