@@ -41,7 +41,8 @@ namespace Assign_5_solution
 
             for (int i = 1; i <= numbers.Length; i++)
             {
-                CreateAllSums(sums, sumLinks, numbers, usedNumbers, sumNumbers, 0, i);
+                //CreateAllSums(sums, sumLinks, numbers, usedNumbers, sumNumbers, 0, i);
+                CreateAllSums(numbers, i, 0, 0, sums, sumLinks, sumNumbers);
             }
 
             //Console.WriteLine(sums.Count);
@@ -85,6 +86,29 @@ namespace Assign_5_solution
                 sumNumbers.Pop();
                 usedNumbers[i] = false;
             }
+        }
+
+        private static void CreateAllSums(int[] numbers, int length, int sum, int numberIndex, HashSet<int> sums, Dictionary<int, HashSet<int>> sumLinks, Stack<int> sumNumbers)
+        {
+            if (numberIndex == length)
+            {
+                foreach (var num in sumNumbers)
+                {
+                    sumLinks[num].Add(sum);
+                }
+                sums.Add(sum);
+                return;
+            }
+
+            int newSum = sum + numbers[numberIndex];
+            sumNumbers.Push(numbers[numberIndex]);
+
+            CreateAllSums(numbers, length, sum + numbers[numberIndex], numberIndex + 1, sums, sumLinks, sumNumbers);
+
+            sumNumbers.Pop();
+
+
+            CreateAllSums(numbers, length, sum, numberIndex + 1, sums, sumLinks, sumNumbers);
         }
 
         private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, Dictionary<int, HashSet<int>> sumLinks, int[] numbers)
