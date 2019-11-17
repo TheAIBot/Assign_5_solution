@@ -126,35 +126,32 @@ namespace Assign_5_solution
 
             int rows = numbers.Length + 1;
             int columns = sum + 1;
-            BitArray data = new BitArray(rows * columns);
-
-            for (int row = 0; row < rows; row++)
-            {
-                data[row * columns] = true;
-            }
+            bool[] prevRow = new bool[columns];
+            bool[] currRow = new bool[columns];
 
             for (int row = 1; row < rows; row++)
             {
-                data[row * columns + numbers[row - 1]] = true;
+                currRow[numbers[row - 1]] = true;
                 for (int column = 1; column < columns; column++)
                 {
-                    if (data[(row - 1) * columns + column])
+                    if (prevRow[column])
                     {
-                        data[row * columns + column] = true;
-                        data[row * columns + column + numbers[row - 1]] = true;
+                        currRow[column] = true;
+                        currRow[column + numbers[row - 1]] = true;
                     }
                 }
-            }
 
-            for (int i = 0; i <= numbers.Length; i++)
-            {
-                for (int j = 0; j <= sum; j++)
+                for (int column = 0; column < columns; column++)
                 {
-                    if (data[i * columns + j])
+                    if (currRow[column] && !prevRow[column])
                     {
-                        sums.Add(j);
+                        sums.Add(column);
                     }
                 }
+
+                bool[] temp = prevRow;
+                prevRow = currRow;
+                currRow = temp;
             }
             Console.WriteLine($"Sums: {sums.Count}");
         }
