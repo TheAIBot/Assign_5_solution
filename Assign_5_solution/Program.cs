@@ -26,8 +26,8 @@ namespace Assign_5_solution
             {
                 numbers[i] = 20_000;
             }
-            
-            
+
+
             Console.WriteLine(numbers.Length);
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -126,33 +126,30 @@ namespace Assign_5_solution
 
             int rows = numbers.Length + 1;
             int columns = sum + 1;
-            bool[] prevRow = new bool[columns];
             bool[] currRow = new bool[columns];
 
             for (int row = 1; row < rows; row++)
             {
-                currRow[numbers[row - 1]] = true;
-                for (int column = 1; column < columns; column++)
+                for (int column = columns - 1; column >= 1; column--)
                 {
-                    if (prevRow[column])
+                    if (currRow[column])
                     {
-                        currRow[column] = true;
+                        //currRow[column] = true;
                         currRow[column + numbers[row - 1]] = true;
                     }
                 }
-
-                for (int column = 0; column < columns; column++)
-                {
-                    if (currRow[column] && !prevRow[column])
-                    {
-                        sums.Add(column);
-                    }
-                }
-
-                bool[] temp = prevRow;
-                prevRow = currRow;
-                currRow = temp;
+                currRow[numbers[row - 1]] = true;
             }
+
+            sums.Add(0);
+            for (int column = 1; column < columns; column++)
+            {
+                if (currRow[column])
+                {
+                    sums.Add(column);
+                }
+            }
+
             Console.WriteLine($"Sums: {sums.Count}");
         }
 
