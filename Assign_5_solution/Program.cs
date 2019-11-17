@@ -118,27 +118,27 @@ namespace Assign_5_solution
 
         static void CreateAllSums(int[] numbers, HashSet<int> sums)
         {
-            int sum = 0;
+            int numbersSum = 0;
             for (int i = 0; i < numbers.Length; i++)
             {
-                sum += numbers[i];
+                numbersSum += numbers[i];
             }
 
-            int rows = numbers.Length + 1;
-            int columns = sum + 1;
+            int rows = numbers.Length;
+            int columns = numbersSum + 1;
             bool[] currRow = new bool[columns];
 
-            for (int row = 1; row < rows; row++)
+            for (int row = 0; row < rows; row++)
             {
-                for (int column = columns - 1; column >= 1; column--)
+                int number = numbers[row];
+                for (int column = columns - 1; column >= 0; column--)
                 {
                     if (currRow[column])
                     {
-                        //currRow[column] = true;
-                        currRow[column + numbers[row - 1]] = true;
+                        currRow[column + number] = true;
                     }
                 }
-                currRow[numbers[row - 1]] = true;
+                currRow[number] = true;
             }
 
             sums.Add(0);
