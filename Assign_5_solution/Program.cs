@@ -39,16 +39,92 @@ namespace Assign_5_solution
             Console.WriteLine(result.newNumber);
         }
 
+        internal readonly struct SumsData
+        {
+            public readonly HashSet<int> Replicas;
+            public readonly HashSet<int> Uniques;
+
+            public SumsData(HashSet<int> replicas, HashSet<int> uniques)
+            {
+                this.Replicas = replicas;
+                this.Uniques = uniques;
+            }
+        }
+
         public static (int number, int newNumber) Solve(int[] numbers)
         {
+            Array.Sort(numbers);
             HashSet<int> sums = CreateAllSums(numbers);
+
+            SumsData[] numberSumsData = new SumsData[numbers.Length];
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                numberSumsData[i] = CreateAllSumsDataForIndex(numbers, i);
+            }
 
             int[] sumsArray = new int[sums.Count];
             sums.CopyTo(sumsArray);
             Array.Sort(sumsArray);
 
-            return CreateCollisionAvoidanceArray(sumsArray, numbers);
+            return CreateCollisionAvoidanceArray(sumsArray, numbers, numberSumsData);
         }
+        
+        private static SumsData CreateAllSumsDataForIndex(int[] numbers, int index)
+        {
+            int temp = numbers[numbers.Length - 1];
+            numbers[numbers.Length - 1] = numbers[index];
+            numbers[index] = temp;
+
+            var data = CreateAllSumsData(numbers);
+
+            temp = numbers[numbers.Length - 1];
+            numbers[numbers.Length - 1] = numbers[index];
+            numbers[index] = temp;
+
+            return data;
+        }
+
+        private static SumsData CreateAllSumsData(int[] numbers)
+        {
+            HashSet<int> currSums = new HashSet<int>();
+            List<int> futureSums = new List<int>();
+
+            currSums.Add(0);
+            for (int i = 0; i < numbers.Length - 1; i++)
+            {
+                futureSums.Clear();
+                foreach (var sum in currSums)
+                {
+                    futureSums.Add(sum + numbers[i]);
+                }
+                futureSums.Add(numbers[i]);
+
+                foreach (var sum in futureSums)
+                {
+                    currSums.Add(sum);
+                }
+            }
+
+            HashSet<int> replicas = new HashSet<int>();
+            HashSet<int> uniques = new HashSet<int>();
+
+            int lastNumber = numbers[numbers.Length - 1];
+            foreach (var sum in currSums)
+            {
+                int newSum = sum + lastNumber;
+                if (currSums.Contains(newSum))
+                {
+                    replicas.Add(newSum);
+                }
+                else
+                {
+                    uniques.Add(newSum);
+                }
+            }
+
+            return new SumsData(replicas, uniques);
+        }
+
         private static HashSet<int> CreateAllSums(int[] numbers)
         {
             HashSet<int> currSums = new HashSet<int>();
@@ -69,33 +145,73 @@ namespace Assign_5_solution
                     currSums.Add(sum);
                 }
             }
-
             //Console.WriteLine($"Sums: {currSums.Count}");
             return currSums;
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, int[] numbers)
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, int[] numbers, SumsData[] numberSumsData)
         {
-            List<(int number, int newNumber, int diff)> fwesa = new List<(int number, int newNumber, int diff)>();
-            foreach (var number in numbers.Distinct())
+            int maxReplicas = int.MinValue;
+            foreach (var data in numberSumsData)
             {
+                maxReplicas = Math.Max(maxReplicas, data.Replicas.Count);
+            }
+
+            List<(int number, int newNumber, int diff)> fwesa = new List<(int number, int newNumber, int diff)>();
+            int index = 0;
+            foreach (var number in numbers)
+            {
+                if (numberSumsData[index].Replicas.Count != maxReplicas)
+                {
+                    index++;
+                    continue;
+                }
+
                 int[] marked = new int[sortedSums[sortedSums.Length - 1] + 1];
 
-                foreach (var sum in sortedSums)
+                foreach (var repSum in numberSumsData[index].Replicas)
                 {
-                    int index = sum - number;
-                    if (index >= 0)
+                    foreach (var sum in sortedSums)
                     {
-                        marked[index]++;
+                        //if (numberSumsData[index].replicas.Contains(sum) || numberSumsData[index].uniques.Contains(sum))
+                        //{
+                        //    continue;
+                        //}
+                        if (numberSumsData[index].Uniques.Contains(sum))
+                        {
+                            continue;
+                        }
+
+                        int overlapIndex = (sum - repSum) + number;
+                        if (overlapIndex == 61)
+                        {
+
+                        }
+                        if (overlapIndex >= 0 && overlapIndex < marked.Length)
+                        {
+                            marked[overlapIndex]++;
+                        }
                     }
                 }
 
-                foreach (var sum in sortedSums)
+                foreach (var repSum in numberSumsData[index].Uniques)
                 {
-                    int index = sum;
-                    if (index >= 0)
+                    foreach (var sum in sortedSums)
                     {
-                        marked[index]++;
+                        if (numberSumsData[index].Uniques.Contains(sum))
+                        {
+                            continue;
+                        }
+
+                        int overlapIndex = (sum - repSum) + number;
+                        if (overlapIndex == 61)
+                        {
+
+                        }
+                        if (overlapIndex >= 0 && overlapIndex < marked.Length)
+                        {
+                            marked[overlapIndex]++;
+                        }
                     }
                 }
 
@@ -111,6 +227,7 @@ namespace Assign_5_solution
                 }
 
                 fwesa.Add((number, newBestIndex, marked[number] - marked[newBestIndex]));
+                index++;
             }
 
             int bestDiff = int.MinValue;
