@@ -51,6 +51,11 @@ namespace Assign_5_solution
                 this.Uniques = uniques;
                 this.Replications = replications;
             }
+
+            public override string ToString()
+            {
+                return $"new: {NewSums.Count}, Uniques: {Uniques.Count}";
+            }
         }
 
         public static (int number, int newNumber) Solve(int[] numbers)
