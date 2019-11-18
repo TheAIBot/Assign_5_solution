@@ -39,15 +39,17 @@ namespace Assign_5_solution
             Console.WriteLine(result.newNumber);
         }
 
-        internal readonly struct SumsData
+        internal struct SumsData
         {
-            public readonly HashSet<int> Replicas;
+            public readonly List<int> NewSums;
             public readonly HashSet<int> Uniques;
+            public readonly int Replications;
 
-            public SumsData(HashSet<int> replicas, HashSet<int> uniques)
+            public SumsData(List<int> newSums, HashSet<int> uniques, int replications)
             {
-                this.Replicas = replicas;
+                this.NewSums = newSums;
                 this.Uniques = uniques;
+                this.Replications = replications;
             }
         }
 
@@ -105,24 +107,26 @@ namespace Assign_5_solution
                 }
             }
 
-            HashSet<int> replicas = new HashSet<int>();
+            List<int> newSums = new List<int>();
             HashSet<int> uniques = new HashSet<int>();
+            int replications = 0;
 
             int lastNumber = numbers[numbers.Length - 1];
             foreach (var sum in currSums)
             {
                 int newSum = sum + lastNumber;
-                if (currSums.Contains(newSum))
-                {
-                    replicas.Add(newSum);
-                }
-                else
+                if (!currSums.Contains(newSum))
                 {
                     uniques.Add(newSum);
                 }
+                else
+                {
+                    replications++;
+                }
+                newSums.Add(newSum);
             }
 
-            return new SumsData(replicas, uniques);
+            return new SumsData(newSums, uniques, replications);
         }
 
         private static HashSet<int> CreateAllSums(int[] numbers)
@@ -154,14 +158,14 @@ namespace Assign_5_solution
             int maxReplicas = int.MinValue;
             foreach (var data in numberSumsData)
             {
-                maxReplicas = Math.Max(maxReplicas, data.Replicas.Count);
+                maxReplicas = Math.Max(maxReplicas, data.Replications);
             }
 
             List<(int number, int newNumber, int diff)> fwesa = new List<(int number, int newNumber, int diff)>();
             int index = 0;
             foreach (var number in numbers)
             {
-                if (numberSumsData[index].Replicas.Count != maxReplicas)
+                if (numberSumsData[index].Replications != maxReplicas)
                 {
                     index++;
                     continue;
@@ -169,32 +173,7 @@ namespace Assign_5_solution
 
                 int[] marked = new int[sortedSums[sortedSums.Length - 1] + 1];
 
-                foreach (var repSum in numberSumsData[index].Replicas)
-                {
-                    foreach (var sum in sortedSums)
-                    {
-                        //if (numberSumsData[index].replicas.Contains(sum) || numberSumsData[index].uniques.Contains(sum))
-                        //{
-                        //    continue;
-                        //}
-                        if (numberSumsData[index].Uniques.Contains(sum))
-                        {
-                            continue;
-                        }
-
-                        int overlapIndex = (sum - repSum) + number;
-                        if (overlapIndex == 61)
-                        {
-
-                        }
-                        if (overlapIndex >= 0 && overlapIndex < marked.Length)
-                        {
-                            marked[overlapIndex]++;
-                        }
-                    }
-                }
-
-                foreach (var repSum in numberSumsData[index].Uniques)
+                foreach (var repSum in numberSumsData[index].NewSums)
                 {
                     foreach (var sum in sortedSums)
                     {
@@ -204,10 +183,6 @@ namespace Assign_5_solution
                         }
 
                         int overlapIndex = (sum - repSum) + number;
-                        if (overlapIndex == 61)
-                        {
-
-                        }
                         if (overlapIndex >= 0 && overlapIndex < marked.Length)
                         {
                             marked[overlapIndex]++;
