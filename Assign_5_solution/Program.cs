@@ -216,15 +216,27 @@ namespace Assign_5_solution
                     filteredSums.Add(sum);
                 }
 
+                int minIndex = 0;
+                numberSumsData[index].NewSums.Sort();
                 foreach (var repSum in numberSumsData[index].NewSums)
                 {
-                    foreach (var sum in filteredSums)
+                    for (int i = minIndex; i < filteredSums.Count; i++)
                     {
+                        int sum = filteredSums[i];
                         int overlapIndex = (sum - repSum) + number;
-                        if (overlapIndex >= 0 && overlapIndex < marked.Length)
+
+                        if (overlapIndex < 0)
                         {
-                            marked[overlapIndex]++;
+                            minIndex = i;
+                            continue;
                         }
+
+                        if (overlapIndex > marked.Length)
+                        {
+                            break;
+                        }
+
+                        marked[overlapIndex]++;
                     }
                 }
 
