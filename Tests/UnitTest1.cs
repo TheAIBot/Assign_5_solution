@@ -135,5 +135,76 @@ namespace Tests
             Assert.AreEqual(5, result.number);
             Assert.AreEqual(35, result.newNumber);
         }
+
+        [TestMethod]
+        public void TestMethod14()
+        {
+            int[] numbers = new int[] { 4, 3, 1, 1, 2 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(1, result.number);
+            Assert.AreEqual(11, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod15()
+        {
+            int[] numbers = new int[] { 584, 822, 4, 536, 806 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(4, result.number);
+            Assert.AreEqual(1, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod16()
+        {
+            int[] numbers = new int[] { 8, 4, 2, 1, 1, 8, 7, 2, 3, 8 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(1, result.number);
+            Assert.AreEqual(44, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod17()
+        {
+            int[] numbers = new int[] { 3, 7, 2, 1, 7, 6, 1, 5, 8 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(1, result.number);
+            Assert.AreEqual(40, result.newNumber);
+        }
+
+
+        [TestMethod]
+        public void TestMethod18()
+        {
+            int[] numbers = new int[] { 63, 22, 2, 37, 27, 7, 72, 8 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(8, result.number);
+            Assert.AreEqual(146, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod19()
+        {
+            int[] numbers = new int[] { 465, 13, 798, 440, 514, 500, 9 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(9, result.number);
+            Assert.AreEqual(3, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod20()
+        {
+            int[] numbers = new int[] { 1658, 26, 7, 128, 1309, 70, 1828, 1858, 923, 751 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(26, result.number);
+            Assert.AreEqual(8, result.newNumber);
+        }
     }
 }
