@@ -124,14 +124,14 @@ namespace Assign_5_solution
                 if (first)
                 {
                     currSums = new HashSet<int>();
+                    foreach (var sum in oldSums)
+                    {
+                        currSums.Add(sum);
+                    }
                     first = false;
                 }
 
                 foreach (var sum in futureSums)
-                {
-                    currSums.Add(sum);
-                }
-                foreach (var sum in oldSums)
                 {
                     currSums.Add(sum);
                 }
