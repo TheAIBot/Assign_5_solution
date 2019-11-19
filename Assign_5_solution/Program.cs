@@ -63,10 +63,16 @@ namespace Assign_5_solution
             Array.Sort(numbers);
             HashSet<int> sums = CreateAllSums(numbers);
 
+            HashSet<int> currSums = new HashSet<int>();
+            currSums.Add(0);
+
+            Dictionary<int, SumsData> foundData = new Dictionary<int, SumsData>();
+            CreateAllSumsDatas(numbers, currSums, foundData);
+
             SumsData[] numberSumsData = new SumsData[numbers.Length];
             for (int i = 0; i < numbers.Length; i++)
             {
-                numberSumsData[i] = CreateAllSumsDataForIndex(numbers, i);
+                numberSumsData[i] = foundData[numbers[i]];
             }
 
             int[] sumsArray = new int[sums.Count];
@@ -75,29 +81,37 @@ namespace Assign_5_solution
 
             return CreateCollisionAvoidanceArray(sumsArray, numbers, numberSumsData);
         }
-        
-        private static SumsData CreateAllSumsDataForIndex(int[] numbers, int index)
+
+        private static void CreateAllSumsDatas(Span<int> numbers, HashSet<int> currSums, Dictionary<int, SumsData> foundData)
         {
-            int temp = numbers[numbers.Length - 1];
-            numbers[numbers.Length - 1] = numbers[index];
-            numbers[index] = temp;
+            if (numbers.Length > 1)
+            {
+                int midPoint = numbers.Length / 2;
+                Span<int> firstPart = numbers.Slice(0, midPoint);
+                Span<int> secondPart = numbers.Slice(midPoint);
 
-            var data = CreateAllSumsData(numbers);
+                HashSet<int> firstPartSums = CreatePartialSums(firstPart, currSums);
+                CreateAllSumsDatas(secondPart, firstPartSums, foundData);
 
-            temp = numbers[numbers.Length - 1];
-            numbers[numbers.Length - 1] = numbers[index];
-            numbers[index] = temp;
-
-            return data;
+                HashSet<int> secondPartSums = CreatePartialSums(secondPart, currSums);
+                CreateAllSumsDatas(firstPart, secondPartSums, foundData);
+            }
+            else
+            {
+                int number = numbers[0];
+                if (!foundData.ContainsKey(number))
+                {
+                    foundData.Add(number, FinishCreateSumsData(number, currSums));
+                }
+            }
         }
 
-        private static SumsData CreateAllSumsData(int[] numbers)
+        private static HashSet<int> CreatePartialSums(Span<int> numbers, HashSet<int> currSums)
         {
-            HashSet<int> currSums = new HashSet<int>();
             List<int> futureSums = new List<int>();
+            bool first = true;
 
-            currSums.Add(0);
-            for (int i = 0; i < numbers.Length - 1; i++)
+            for (int i = 0; i < numbers.Length; i++)
             {
                 futureSums.Clear();
                 foreach (var sum in currSums)
@@ -106,20 +120,31 @@ namespace Assign_5_solution
                 }
                 futureSums.Add(numbers[i]);
 
+                if (first)
+                {
+                    currSums = new HashSet<int>();
+                    currSums.Add(0);
+                    first = false;
+                }
+
                 foreach (var sum in futureSums)
                 {
                     currSums.Add(sum);
                 }
             }
 
+            return currSums;
+        }
+
+        private static SumsData FinishCreateSumsData(int number, HashSet<int> currSums)
+        {
             List<int> newSums = new List<int>();
             HashSet<int> uniques = new HashSet<int>();
             int replications = 0;
 
-            int lastNumber = numbers[numbers.Length - 1];
             foreach (var sum in currSums)
             {
-                int newSum = sum + lastNumber;
+                int newSum = sum + number;
                 if (!currSums.Contains(newSum))
                 {
                     uniques.Add(newSum);
