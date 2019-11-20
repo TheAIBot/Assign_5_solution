@@ -231,11 +231,6 @@ namespace Assign_5_solution
                         continue;
                     }
 
-                    if (overlapIndex > marked.Length)
-                    {
-                        break;
-                    }
-
                     marked[overlapIndex]++;
                 }
             }
