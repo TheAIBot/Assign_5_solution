@@ -91,7 +91,7 @@ namespace Assign_5_solution
             sums.CopyTo(sumsArray);
             Array.Sort(sumsArray);
 
-            return CreateCollisionAvoidanceArray(sumsArray, numbers, bestData);
+            return CreateCollisionAvoidanceArray(sumsArray, bestData);
         }
 
         private static void CreateAllSumsDatas(Span<int> numbers, HashSet<int> currSums, HashSet<int> foundData, ref BestSumsData datas)
@@ -127,7 +127,6 @@ namespace Assign_5_solution
 
         private static HashSet<int> CreatePartialSums(Span<int> numbers, HashSet<int> currSums)
         {
-            HashSet<int> oldSums = currSums;
             List<int> futureSums = new List<int>();
             bool first = true;
 
@@ -142,11 +141,7 @@ namespace Assign_5_solution
 
                 if (first)
                 {
-                    currSums = new HashSet<int>();
-                    foreach (var sum in oldSums)
-                    {
-                        currSums.Add(sum);
-                    }
+                    currSums = new HashSet<int>(currSums);
                     first = false;
                 }
 
@@ -206,7 +201,7 @@ namespace Assign_5_solution
             return currSums;
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, int[] numbers, BestSumsData bestData)
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, BestSumsData bestData)
         {
             SumsData sumData = bestData.Data;
 
