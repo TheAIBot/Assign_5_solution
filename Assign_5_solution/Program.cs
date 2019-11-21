@@ -85,8 +85,8 @@ namespace Assign_5_solution
 
             HashSet<int> foundData = new HashSet<int>();
             BestSumsData bestData = new BestSumsData();
-            int wada = int.MaxValue;
-            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref wada, sums.Count);
+            int bestUniquesCount = int.MaxValue;
+            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Count);
 
             int[] sumsArray = new int[sums.Count];
             sums.CopyTo(sumsArray);
@@ -95,7 +95,7 @@ namespace Assign_5_solution
             return CreateCollisionAvoidanceArray(sumsArray, bestData);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, HashSet<int> currSums, HashSet<int> foundData, ref BestSumsData datas, ref int maxUniques, int sumsCount)
+        private static void CreateAllSumsDatas(Span<int> numbers, HashSet<int> currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount)
         {
             if (numbers.Length > 1)
             {
@@ -104,14 +104,14 @@ namespace Assign_5_solution
                 Span<int> secondPart = numbers.Slice(midPoint);
 
                 HashSet<int> firstPartSums = CreatePartialSums(firstPart, currSums);
-                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref maxUniques, sumsCount);
+                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount);
 
                 HashSet<int> secondPartSums = CreatePartialSums(secondPart, currSums);
-                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref maxUniques, sumsCount);
+                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount);
             }
             else
             {
-                if (sumsCount - currSums.Count > maxUniques)
+                if (sumsCount - currSums.Count > minuniques)
                 {
                     return;
                 }
@@ -128,7 +128,7 @@ namespace Assign_5_solution
                         datas = newData;
                     }
 
-                    maxUniques = Math.Min(maxUniques, datas.Data.Uniques.Count);
+                    minuniques = Math.Min(minuniques, datas.Data.Uniques.Count);
                 }
             }
         }
