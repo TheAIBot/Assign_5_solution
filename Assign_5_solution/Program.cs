@@ -85,7 +85,8 @@ namespace Assign_5_solution
 
             HashSet<int> foundData = new HashSet<int>();
             BestSumsData bestData = new BestSumsData();
-            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData);
+            int wada = int.MaxValue;
+            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref wada, sums.Count);
 
             int[] sumsArray = new int[sums.Count];
             sums.CopyTo(sumsArray);
@@ -94,7 +95,7 @@ namespace Assign_5_solution
             return CreateCollisionAvoidanceArray(sumsArray, bestData);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, HashSet<int> currSums, HashSet<int> foundData, ref BestSumsData datas)
+        private static void CreateAllSumsDatas(Span<int> numbers, HashSet<int> currSums, HashSet<int> foundData, ref BestSumsData datas, ref int maxUniques, int sumsCount)
         {
             if (numbers.Length > 1)
             {
@@ -103,13 +104,18 @@ namespace Assign_5_solution
                 Span<int> secondPart = numbers.Slice(midPoint);
 
                 HashSet<int> firstPartSums = CreatePartialSums(firstPart, currSums);
-                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas);
+                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref maxUniques, sumsCount);
 
                 HashSet<int> secondPartSums = CreatePartialSums(secondPart, currSums);
-                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas);
+                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref maxUniques, sumsCount);
             }
             else
             {
+                if (sumsCount - currSums.Count > maxUniques)
+                {
+                    return;
+                }
+
                 int number = numbers[0];
                 if (!foundData.Contains(number))
                 {
@@ -121,6 +127,8 @@ namespace Assign_5_solution
                     {
                         datas = newData;
                     }
+
+                    maxUniques = Math.Min(maxUniques, datas.Data.Uniques.Count);
                 }
             }
         }
