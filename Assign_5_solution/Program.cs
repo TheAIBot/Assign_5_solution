@@ -112,11 +112,11 @@ namespace Assign_5_solution
                 Span<int> firstPart = numbers.Slice(0, midPoint);
                 Span<int> secondPart = numbers.Slice(midPoint);
 
-                bool[] firstPartSums = CreatePartialSums(firstPart, currSums);
-                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount);
-
                 bool[] secondPartSums = CreatePartialSums(secondPart, currSums);
                 CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount);
+
+                bool[] firstPartSums = CreatePartialSums(firstPart, currSums);
+                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount);
             }
             else
             {
