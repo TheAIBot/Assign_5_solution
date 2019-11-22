@@ -47,11 +47,18 @@ namespace Assign_5_solution
             public readonly HashSet<int> Uniques;
             public readonly int Replications;
 
-            public SumsData(List<int> newSums, HashSet<int> uniques, int replications)
+            public SumsData(List<int> newSums, HashSet<int> uniques)
             {
                 this.NewSums = newSums;
                 this.Uniques = uniques;
-                this.Replications = replications;
+                this.Replications = newSums.Count - uniques.Count;
+            }
+
+            public SumsData(List<int> newSums, HashSet<int> uniques, int reps)
+            {
+                this.NewSums = newSums;
+                this.Uniques = uniques;
+                this.Replications = reps;
             }
 
             public override string ToString()
@@ -173,7 +180,6 @@ namespace Assign_5_solution
         {
             List<int> newSums = new List<int>();
             HashSet<int> uniques = new HashSet<int>();
-            int replications = 0;
 
             for (int i = 0; i < currSums.Length; i++)
             {
@@ -192,7 +198,7 @@ namespace Assign_5_solution
                 }
             }
 
-            return new SumsData(newSums, uniques, replications);
+            return new SumsData(newSums, uniques);
         }
 
         private static HashSet<int> CreateAllSums(int[] numbers)
@@ -227,6 +233,7 @@ namespace Assign_5_solution
                     sums.Add(i);
                 }
             }
+            sums.Remove(0);
 
             return sums;
         }
