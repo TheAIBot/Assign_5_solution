@@ -87,8 +87,7 @@ namespace Assign_5_solution
         public static (int number, int newNumber) Solve(int[] numbers)
         {
             Array.Sort(numbers);
-            int maxCreated = -1;
-            int[] sums = CreateAllSums(numbers, ref maxCreated);
+            int maxCreated = GetFirstReplicateIndex(numbers);
 
             bool[] currSums = new bool[1];
             currSums[0] = true;
@@ -97,12 +96,13 @@ namespace Assign_5_solution
             BestSumsData bestData = new BestSumsData();
             int bestUniquesCount = int.MaxValue;
             int created = 0;
-            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Length, ref created, maxCreated);
+            int[] sums = null;
+            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, -1, ref created, maxCreated, ref sums);
 
             return CreateCollisionAvoidanceArray(sums, bestData);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, bool[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount, ref int created, int maxCreated)
+        private static void CreateAllSumsDatas(Span<int> numbers, bool[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount, ref int created, int maxCreated, ref int[] sums)
         {
             if (numbers.Length > 1)
             {
@@ -116,7 +116,7 @@ namespace Assign_5_solution
                 }
 
                 bool[] secondPartSums = CreatePartialSums(secondPart, currSums);
-                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated);
+                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated, ref sums);
 
                 if (created > maxCreated)
                 {
@@ -124,7 +124,7 @@ namespace Assign_5_solution
                 }
 
                 bool[] firstPartSums = CreatePartialSums(firstPart, currSums);
-                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated);
+                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated, ref sums);
             }
             else
             {
@@ -147,6 +147,11 @@ namespace Assign_5_solution
                         newData.Number < datas.Number))
                     {
                         datas = newData;
+                    }
+
+                    if (sumsCount == -1)
+                    {
+                        CreateAllSums(number, ref sumsCount, currSums, ref sums);
                     }
 
                     minuniques = Math.Min(minuniques, datas.Data.Uniques.Count);
@@ -220,7 +225,23 @@ namespace Assign_5_solution
             return new SumsData(newSums, uniques);
         }
 
-        private static int[] CreateAllSums(int[] numbers, ref int index)
+        private static void CreateAllSums(int number, ref int sumsCount, bool[] currSums, ref int[] sums)
+        {
+            bool[] allSums = CreatePartialSums(new int[] { number }, currSums);
+            sumsCount = BoolArrayTrueCount(allSums);
+
+            sums = new int[sumsCount - 1];
+            int sumsIndex = 0;
+            for (int i = 1; i < allSums.Length; i++)
+            {
+                if (allSums[i])
+                {
+                    sums[sumsIndex++] = i;
+                }
+            }
+        }
+
+        private static int GetFirstReplicateIndex(int[] numbers)
         {
             int maxSum = 1;
             for (int i = 0; i < numbers.Length; i++)
@@ -231,15 +252,12 @@ namespace Assign_5_solution
             bool[] newSums = new bool[maxSum];
             newSums[0] = true;
 
-            bool first = true;
-
             int prevMaxSum = 0;
             for (int i = 0; i < numbers.Length; i++)
             {
-                if (first && newSums[numbers[i]])
+                if (newSums[numbers[i]])
                 {
-                    first = false;
-                    index = i;
+                    return i;
                 }
                 for (int z = prevMaxSum; z >= 0; z--)
                 {
@@ -251,23 +269,7 @@ namespace Assign_5_solution
                 prevMaxSum += numbers[i];
             }
 
-            int actualSumCount = BoolArrayTrueCount(newSums);
-            int[] sums = new int[actualSumCount - 1];
-            int sumsIndex = 0;
-            for (int i = 1; i < newSums.Length; i++)
-            {
-                if (newSums[i])
-                {
-                    sums[sumsIndex++] = i;
-                }
-            }
-
-            if (index == -1)
-            {
-                index = numbers.Length;
-            }
-
-            return sums;
+            return numbers.Length;
         }
 
         private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, BestSumsData bestData)
