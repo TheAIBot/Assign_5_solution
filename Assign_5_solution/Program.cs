@@ -87,7 +87,8 @@ namespace Assign_5_solution
         public static (int number, int newNumber) Solve(int[] numbers)
         {
             Array.Sort(numbers);
-            HashSet<int> sums = CreateAllSums(numbers);
+            int maxCreated = -1;
+            HashSet<int> sums = CreateAllSums(numbers, ref maxCreated);
 
             bool[] currSums = new bool[1];
             currSums[0] = true;
@@ -95,7 +96,8 @@ namespace Assign_5_solution
             HashSet<int> foundData = new HashSet<int>();
             BestSumsData bestData = new BestSumsData();
             int bestUniquesCount = int.MaxValue;
-            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Count);
+            int created = 0;
+            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Count, ref created, maxCreated);
 
             int[] sumsArray = new int[sums.Count];
             sums.CopyTo(sumsArray);
@@ -104,7 +106,7 @@ namespace Assign_5_solution
             return CreateCollisionAvoidanceArray(sumsArray, bestData);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, bool[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount)
+        private static void CreateAllSumsDatas(Span<int> numbers, bool[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount, ref int created, int maxCreated)
         {
             if (numbers.Length > 1)
             {
@@ -112,14 +114,26 @@ namespace Assign_5_solution
                 Span<int> firstPart = numbers.Slice(0, midPoint);
                 Span<int> secondPart = numbers.Slice(midPoint);
 
+                if (created > maxCreated)
+                {
+                    return;
+                }
+
                 bool[] secondPartSums = CreatePartialSums(secondPart, currSums);
-                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount);
+                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated);
+
+                if (created > maxCreated)
+                {
+                    return;
+                }
 
                 bool[] firstPartSums = CreatePartialSums(firstPart, currSums);
-                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount);
+                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated);
             }
             else
             {
+                created++;
+
                 Span<byte> dwjak = MemoryMarshal.Cast<bool, byte>(currSums);
                 int actualSumCount = 0;
                 for (int i = 0; i < dwjak.Length; i++)
@@ -160,9 +174,11 @@ namespace Assign_5_solution
             bool[] newSums = new bool[maxSum];
             currSums.CopyTo(newSums, 0);
 
+
             int prevMaxSum = currSums.Length - 1;
             for (int i = 0; i < numbers.Length; i++)
             {
+
                 for (int z = prevMaxSum; z >= 0; z--)
                 {
                     if (newSums[z])
@@ -201,7 +217,7 @@ namespace Assign_5_solution
             return new SumsData(newSums, uniques);
         }
 
-        private static HashSet<int> CreateAllSums(int[] numbers)
+        private static HashSet<int> CreateAllSums(int[] numbers, ref int index)
         {
             int maxSum = 1;
             for (int i = 0; i < numbers.Length; i++)
@@ -212,9 +228,16 @@ namespace Assign_5_solution
             bool[] newSums = new bool[maxSum];
             newSums[0] = true;
 
+            bool first = true;
+
             int prevMaxSum = 0;
             for (int i = 0; i < numbers.Length; i++)
             {
+                if (first && newSums[numbers[i]])
+                {
+                    first = false;
+                    index = i;
+                }
                 for (int z = prevMaxSum; z >= 0; z--)
                 {
                     if (newSums[z])
@@ -234,6 +257,11 @@ namespace Assign_5_solution
                 }
             }
             sums.Remove(0);
+
+            if (index == -1)
+            {
+                index = numbers.Length;
+            }
 
             return sums;
         }
