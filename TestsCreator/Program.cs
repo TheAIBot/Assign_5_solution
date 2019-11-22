@@ -21,13 +21,14 @@ namespace TestsCreator
                 {
                     numbers[z] = rand.Next(1, 2000);
                 }
+                Array.Sort(numbers);
 
                 var result = Assign_5_solution.Program.Solve(numbers);
 
                 string test =
                     $@"
         [TestMethod]
-        public void TestMethod{i + startTestNumber}()
+        public void TestMethod{(i + startTestNumber).ToString().PadLeft(3, '0')}()
         {{
             int[] numbers = new int[] {{ {string.Join(", ", numbers)} }};
 
