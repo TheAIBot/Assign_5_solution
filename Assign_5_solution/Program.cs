@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Assign_5_solution
 {
@@ -81,13 +82,10 @@ namespace Assign_5_solution
             Array.Sort(numbers);
             HashSet<int> sums = CreateAllSums(numbers);
 
-            HashSet<int> currSums = new HashSet<int>();
-            currSums.Add(0);
-
             HashSet<int> foundData = new HashSet<int>();
             BestSumsData bestData = new BestSumsData();
             int bestUniquesCount = int.MaxValue;
-            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Count);
+            CreateAllSumsDatas(numbers, new bool[1], foundData, ref bestData, ref bestUniquesCount, sums.Count);
 
             int[] sumsArray = new int[sums.Count];
             sums.CopyTo(sumsArray);
@@ -96,7 +94,7 @@ namespace Assign_5_solution
             return CreateCollisionAvoidanceArray(sumsArray, bestData);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, HashSet<int> currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount)
+        private static void CreateAllSumsDatas(Span<int> numbers, bool[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount)
         {
             if (numbers.Length > 1)
             {
@@ -104,15 +102,22 @@ namespace Assign_5_solution
                 Span<int> firstPart = numbers.Slice(0, midPoint);
                 Span<int> secondPart = numbers.Slice(midPoint);
 
-                HashSet<int> firstPartSums = CreatePartialSums(firstPart, currSums);
+                bool[] firstPartSums = CreatePartialSums(firstPart, currSums);
                 CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount);
 
-                HashSet<int> secondPartSums = CreatePartialSums(secondPart, currSums);
+                bool[] secondPartSums = CreatePartialSums(secondPart, currSums);
                 CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount);
             }
             else
             {
-                if (sumsCount - currSums.Count > minuniques)
+                Span<byte> dwjak = MemoryMarshal.Cast<bool, byte>(currSums);
+                int actualSumCount = 0;
+                for (int i = 0; i < dwjak.Length; i++)
+                {
+                    actualSumCount += dwjak[i];
+                }
+
+                if (sumsCount - actualSumCount > minuniques)
                 {
                     return;
                 }
@@ -134,51 +139,47 @@ namespace Assign_5_solution
             }
         }
 
-        private static HashSet<int> CreatePartialSums(Span<int> numbers, HashSet<int> currSums)
+        private static bool[] CreatePartialSums(Span<int> numbers, bool[] currSums)
         {
-            List<int> futureSums = new List<int>();
-            bool first = true;
+            int maxSum = currSums.Length;
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                maxSum += numbers[i];
+            }
+
+            bool[] newSums = new bool[maxSum];
+            currSums.CopyTo(newSums, 0);
 
             for (int i = 0; i < numbers.Length; i++)
             {
-                futureSums.Clear();
-                foreach (var sum in currSums)
+                for (int z = newSums.Length - 1; z >= 0; z--)
                 {
-                    futureSums.Add(sum + numbers[i]);
-                }
-                futureSums.Add(numbers[i]);
-
-                if (first)
-                {
-                    currSums = new HashSet<int>(currSums);
-                    first = false;
-                }
-
-                foreach (var sum in futureSums)
-                {
-                    currSums.Add(sum);
+                    if (newSums[z])
+                    {
+                        newSums[z + numbers[i]] = true;
+                    }
                 }
             }
 
-            return currSums;
+            return newSums;
         }
 
-        private static SumsData FinishCreateSumsData(int number, HashSet<int> currSums)
+        private static SumsData FinishCreateSumsData(int number, bool[] currSums)
         {
             List<int> newSums = new List<int>();
             HashSet<int> uniques = new HashSet<int>();
             int replications = 0;
 
-            foreach (var sum in currSums)
+            for (int i = 0; i < currSums.Length; i++)
             {
-                int newSum = sum + number;
-                if (!currSums.Contains(newSum))
+                int newSum = i + number;
+                if (newSum >= currSums.Length)
                 {
                     uniques.Add(newSum);
                 }
-                else
+                else if (!currSums[newSum])
                 {
-                    replications++;
+                    uniques.Add(newSum);
                 }
                 newSums.Add(newSum);
             }
