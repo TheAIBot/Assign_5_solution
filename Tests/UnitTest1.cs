@@ -266,5 +266,45 @@ namespace Tests
         //    Assert.AreEqual(165, result.number);
         //    Assert.AreEqual(4902484, result.newNumber);
         //}
+
+        [TestMethod]
+        public void TestMethod27()
+        {
+            int[] numbers = new int[] { 5, 11, 8, 2 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(2, result.number);
+            Assert.AreEqual(1, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod28()
+        {
+            int[] numbers = new int[] { 3, 7, 4, 8 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(3, result.number);
+            Assert.AreEqual(2, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod29()
+        {
+            int[] numbers = new int[] { 17, 3, 9, 6 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(3, result.number);
+            Assert.AreEqual(1, result.newNumber);
+        }
+
+        [TestMethod]
+        public void TestMethod30()
+        {
+            int[] numbers = new int[] { 16, 18, 4, 7 };
+
+            var result = Program.Solve(numbers);
+            Assert.AreEqual(4, result.number);
+            Assert.AreEqual(1, result.newNumber);
+        }
     }
 }
