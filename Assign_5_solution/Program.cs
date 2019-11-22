@@ -22,12 +22,12 @@ namespace Assign_5_solution
             //}
 
             //int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23 };
-            int[] numbers = new int[300];
+            int[] numbers = new int[500];
             Random rand = new Random(5263);
             for (int i = 0; i < numbers.Length; i++)
             {
-                numbers[i] = 1000 + i;
-                //numbers[i] = rand.Next(1, 20_001);
+                //numbers[i] = 20_000;
+                numbers[i] = rand.Next(1, 20_001);
             }
 
             Console.WriteLine(numbers.Length);
@@ -82,10 +82,13 @@ namespace Assign_5_solution
             Array.Sort(numbers);
             HashSet<int> sums = CreateAllSums(numbers);
 
+            bool[] currSums = new bool[1];
+            currSums[0] = true;
+
             HashSet<int> foundData = new HashSet<int>();
             BestSumsData bestData = new BestSumsData();
             int bestUniquesCount = int.MaxValue;
-            CreateAllSumsDatas(numbers, new bool[1], foundData, ref bestData, ref bestUniquesCount, sums.Count);
+            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Count);
 
             int[] sumsArray = new int[sums.Count];
             sums.CopyTo(sumsArray);
@@ -150,15 +153,17 @@ namespace Assign_5_solution
             bool[] newSums = new bool[maxSum];
             currSums.CopyTo(newSums, 0);
 
+            int prevMaxSum = currSums.Length - 1;
             for (int i = 0; i < numbers.Length; i++)
             {
-                for (int z = newSums.Length - 1; z >= 0; z--)
+                for (int z = prevMaxSum; z >= 0; z--)
                 {
                     if (newSums[z])
                     {
                         newSums[z + numbers[i]] = true;
                     }
                 }
+                prevMaxSum += numbers[i];
             }
 
             return newSums;
@@ -172,16 +177,19 @@ namespace Assign_5_solution
 
             for (int i = 0; i < currSums.Length; i++)
             {
-                int newSum = i + number;
-                if (newSum >= currSums.Length)
+                if (currSums[i])
                 {
-                    uniques.Add(newSum);
+                    int newSum = i + number;
+                    if (newSum >= currSums.Length)
+                    {
+                        uniques.Add(newSum);
+                    }
+                    else if (!currSums[newSum])
+                    {
+                        uniques.Add(newSum);
+                    }
+                    newSums.Add(newSum);
                 }
-                else if (!currSums[newSum])
-                {
-                    uniques.Add(newSum);
-                }
-                newSums.Add(newSum);
             }
 
             return new SumsData(newSums, uniques, replications);
@@ -189,26 +197,38 @@ namespace Assign_5_solution
 
         private static HashSet<int> CreateAllSums(int[] numbers)
         {
-            HashSet<int> currSums = new HashSet<int>();
-            List<int> futureSums = new List<int>();
-
-            currSums.Add(0);
+            int maxSum = 1;
             for (int i = 0; i < numbers.Length; i++)
             {
-                futureSums.Clear();
-                foreach (var sum in currSums)
-                {
-                    futureSums.Add(sum + numbers[i]);
-                }
-                futureSums.Add(numbers[i]);
+                maxSum += numbers[i];
+            }
 
-                foreach (var sum in futureSums)
+            bool[] newSums = new bool[maxSum];
+            newSums[0] = true;
+
+            int prevMaxSum = 0;
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                for (int z = prevMaxSum; z >= 0; z--)
                 {
-                    currSums.Add(sum);
+                    if (newSums[z])
+                    {
+                        newSums[z + numbers[i]] = true;
+                    }
+                }
+                prevMaxSum += numbers[i];
+            }
+
+            HashSet<int> sums = new HashSet<int>();
+            for (int i = 0; i < newSums.Length; i++)
+            {
+                if (newSums[i])
+                {
+                    sums.Add(i);
                 }
             }
-            //Console.WriteLine($"Sums: {currSums.Count}");
-            return currSums;
+
+            return sums;
         }
 
         private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, BestSumsData bestData)
