@@ -88,7 +88,7 @@ namespace Assign_5_solution
         {
             Array.Sort(numbers);
             int maxCreated = -1;
-            HashSet<int> sums = CreateAllSums(numbers, ref maxCreated);
+            int[] sums = CreateAllSums(numbers, ref maxCreated);
 
             bool[] currSums = new bool[1];
             currSums[0] = true;
@@ -97,13 +97,9 @@ namespace Assign_5_solution
             BestSumsData bestData = new BestSumsData();
             int bestUniquesCount = int.MaxValue;
             int created = 0;
-            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Count, ref created, maxCreated);
+            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, sums.Length, ref created, maxCreated);
 
-            int[] sumsArray = new int[sums.Count];
-            sums.CopyTo(sumsArray);
-            Array.Sort(sumsArray);
-
-            return CreateCollisionAvoidanceArray(sumsArray, bestData);
+            return CreateCollisionAvoidanceArray(sums, bestData);
         }
 
         private static void CreateAllSumsDatas(Span<int> numbers, bool[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount, ref int created, int maxCreated)
@@ -134,12 +130,7 @@ namespace Assign_5_solution
             {
                 created++;
 
-                Span<byte> dwjak = MemoryMarshal.Cast<bool, byte>(currSums);
-                int actualSumCount = 0;
-                for (int i = 0; i < dwjak.Length; i++)
-                {
-                    actualSumCount += dwjak[i];
-                }
+                int actualSumCount = BoolArrayTrueCount(currSums);
 
                 if (sumsCount - actualSumCount > minuniques)
                 {
@@ -161,6 +152,18 @@ namespace Assign_5_solution
                     minuniques = Math.Min(minuniques, datas.Data.Uniques.Count);
                 }
             }
+        }
+
+        private static int BoolArrayTrueCount(bool[] array)
+        {
+            Span<byte> trueAsSpan = MemoryMarshal.Cast<bool, byte>(array);
+            int trueCount = 0;
+            for (int i = 0; i < trueAsSpan.Length; i++)
+            {
+                trueCount += trueAsSpan[i];
+            }
+
+            return trueCount;
         }
 
         private static bool[] CreatePartialSums(Span<int> numbers, bool[] currSums)
@@ -217,7 +220,7 @@ namespace Assign_5_solution
             return new SumsData(newSums, uniques);
         }
 
-        private static HashSet<int> CreateAllSums(int[] numbers, ref int index)
+        private static int[] CreateAllSums(int[] numbers, ref int index)
         {
             int maxSum = 1;
             for (int i = 0; i < numbers.Length; i++)
@@ -248,15 +251,16 @@ namespace Assign_5_solution
                 prevMaxSum += numbers[i];
             }
 
-            HashSet<int> sums = new HashSet<int>();
-            for (int i = 0; i < newSums.Length; i++)
+            int actualSumCount = BoolArrayTrueCount(newSums);
+            int[] sums = new int[actualSumCount - 1];
+            int sumsIndex = 0;
+            for (int i = 1; i < newSums.Length; i++)
             {
                 if (newSums[i])
                 {
-                    sums.Add(i);
+                    sums[sumsIndex++] = i;
                 }
             }
-            sums.Remove(0);
 
             if (index == -1)
             {
