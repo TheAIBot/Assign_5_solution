@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Assign_5_solution
@@ -11,31 +12,31 @@ namespace Assign_5_solution
     {
         static void Main(string[] args)
         {
-            //int numbersCount = int.Parse(Console.ReadLine());
-            //string numbersAsString = Console.ReadLine();
-            //int[] numbers = new int[numbersCount];
+            int numbersCount = int.Parse(Console.ReadLine());
+            string numbersAsString = Console.ReadLine();
+            int[] numbers = new int[numbersCount];
 
-            //int index = 0;
-            //foreach (var split in numbersAsString.Split(' '))
-            //{
-            //    numbers[index++] = int.Parse(split);
-            //}
-
-            //int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23 };
-            int[] numbers = new int[1000];
-            Random rand = new Random(5263);
-            for (int i = 0; i < numbers.Length; i++)
+            int index = 0;
+            foreach (var split in numbersAsString.Split(' '))
             {
-                //numbers[i] = 20_000;
-                numbers[i] = rand.Next(1, 20_001);
+                numbers[index++] = int.Parse(split);
             }
 
-            Console.WriteLine(numbers.Length);
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
+            //int[] numbers = new int[] { 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 7, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23, 23, 45, 2, 6, 2, 3, 8, 6, 2, 8, 45, 2, 6, 2, 3, 8, 6, 2, 8, 2, 6, 2, 56, 23, 65, 23 };
+            //int[] numbers = new int[1000];
+            //Random rand = new Random(5263);
+            //for (int i = 0; i < numbers.Length; i++)
+            //{
+            //    //numbers[i] = 20_000;
+            //    numbers[i] = rand.Next(1, 20_001);
+            //}
+
+            //Console.WriteLine(numbers.Length);
+            //Stopwatch watch = new Stopwatch();
+            //watch.Start();
             var result = Solve(numbers);
-            watch.Stop();
-            Console.WriteLine($"Time: {watch.ElapsedMilliseconds}");
+            //watch.Stop();
+            //Console.WriteLine($"Time: {watch.ElapsedMilliseconds}");
 
             Console.WriteLine(result.number);
             Console.WriteLine(result.newNumber);
@@ -89,8 +90,8 @@ namespace Assign_5_solution
             Array.Sort(numbers);
             int maxCreated = GetFirstReplicateIndex(numbers);
 
-            bool[] currSums = new bool[1];
-            currSums[0] = true;
+            byte[] currSums = new byte[1];
+            currSums[0] = 1;
 
             HashSet<int> foundData = new HashSet<int>();
             BestSumsData bestData = new BestSumsData();
@@ -102,7 +103,7 @@ namespace Assign_5_solution
             return CreateCollisionAvoidanceArray(sums, bestData);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, bool[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount, ref int created, int maxCreated, ref int[] sums)
+        private static void CreateAllSumsDatas(Span<int> numbers, byte[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount, ref int created, int maxCreated, ref int[] sums)
         {
             if (numbers.Length > 1)
             {
@@ -115,7 +116,7 @@ namespace Assign_5_solution
                     return;
                 }
 
-                bool[] secondPartSums = CreatePartialSums(secondPart, currSums);
+                byte[] secondPartSums = CreatePartialSums(secondPart, currSums);
                 CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated, ref sums);
 
                 if (created > maxCreated)
@@ -123,7 +124,7 @@ namespace Assign_5_solution
                     return;
                 }
 
-                bool[] firstPartSums = CreatePartialSums(firstPart, currSums);
+                byte[] firstPartSums = CreatePartialSums(firstPart, currSums);
                 CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated, ref sums);
             }
             else
@@ -131,7 +132,6 @@ namespace Assign_5_solution
                 created++;
 
                 int actualSumCount = BoolArrayTrueCount(currSums);
-
                 if (sumsCount - actualSumCount > minuniques)
                 {
                     return;
@@ -159,19 +159,18 @@ namespace Assign_5_solution
             }
         }
 
-        private static int BoolArrayTrueCount(bool[] array)
+        private static int BoolArrayTrueCount(byte[] array)
         {
-            Span<byte> trueAsSpan = MemoryMarshal.Cast<bool, byte>(array);
             int trueCount = 0;
-            for (int i = 0; i < trueAsSpan.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
-                trueCount += trueAsSpan[i];
+                trueCount += array[i];
             }
 
             return trueCount;
         }
 
-        private static bool[] CreatePartialSums(Span<int> numbers, bool[] currSums)
+        private static byte[] CreatePartialSums(Span<int> numbers, byte[] currSums)
         {
             int maxSum = currSums.Length;
             for (int i = 0; i < numbers.Length; i++)
@@ -179,20 +178,25 @@ namespace Assign_5_solution
                 maxSum += numbers[i];
             }
 
-            bool[] newSums = new bool[maxSum];
+            byte[] newSums = new byte[maxSum];
             currSums.CopyTo(newSums, 0);
 
 
             int prevMaxSum = currSums.Length - 1;
             for (int i = 0; i < numbers.Length; i++)
             {
-
-                for (int z = prevMaxSum; z >= 0; z--)
+                int z = prevMaxSum;
+                for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
                 {
-                    if (newSums[z])
-                    {
-                        newSums[z + numbers[i]] = true;
-                    }
+                    Vector<byte> left = new Vector<byte>(newSums, z - Vector<byte>.Count + 1);
+                    Vector<byte> right = new Vector<byte>(newSums, z - Vector<byte>.Count + numbers[i] + 1);
+
+                    Vector<byte> result = (left | right);
+                    result.CopyTo(newSums, z - Vector<byte>.Count + numbers[i] + 1);
+                }
+                for (; z >= 0; z--)
+                {
+                    newSums[z + numbers[i]] |= newSums[z];
                 }
                 prevMaxSum += numbers[i];
             }
@@ -200,21 +204,21 @@ namespace Assign_5_solution
             return newSums;
         }
 
-        private static SumsData FinishCreateSumsData(int number, bool[] currSums)
+        private static SumsData FinishCreateSumsData(int number, byte[] currSums)
         {
             List<int> newSums = new List<int>();
             HashSet<int> uniques = new HashSet<int>();
 
             for (int i = 0; i < currSums.Length; i++)
             {
-                if (currSums[i])
+                if (currSums[i] == 1)
                 {
                     int newSum = i + number;
                     if (newSum >= currSums.Length)
                     {
                         uniques.Add(newSum);
                     }
-                    else if (!currSums[newSum])
+                    else if (currSums[newSum] == 0)
                     {
                         uniques.Add(newSum);
                     }
@@ -225,16 +229,16 @@ namespace Assign_5_solution
             return new SumsData(newSums, uniques);
         }
 
-        private static void CreateAllSums(int number, ref int sumsCount, bool[] currSums, ref int[] sums)
+        private static void CreateAllSums(int number, ref int sumsCount, byte[] currSums, ref int[] sums)
         {
-            bool[] allSums = CreatePartialSums(new int[] { number }, currSums);
+            byte[] allSums = CreatePartialSums(new int[] { number }, currSums);
             sumsCount = BoolArrayTrueCount(allSums);
 
             sums = new int[sumsCount - 1];
             int sumsIndex = 0;
             for (int i = 1; i < allSums.Length; i++)
             {
-                if (allSums[i])
+                if (allSums[i] == 1)
                 {
                     sums[sumsIndex++] = i;
                 }
