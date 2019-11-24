@@ -45,17 +45,17 @@ namespace Assign_5_solution
         internal struct SumsData
         {
             public readonly List<int> NewSums;
-            public readonly HashSet<int> Uniques;
+            public readonly List<int> Uniques;
             public readonly int Replications;
 
-            public SumsData(List<int> newSums, HashSet<int> uniques)
+            public SumsData(List<int> newSums, List<int> uniques)
             {
                 this.NewSums = newSums;
                 this.Uniques = uniques;
                 this.Replications = newSums.Count - uniques.Count;
             }
 
-            public SumsData(List<int> newSums, HashSet<int> uniques, int reps)
+            public SumsData(List<int> newSums, List<int> uniques, int reps)
             {
                 this.NewSums = newSums;
                 this.Uniques = uniques;
@@ -207,7 +207,7 @@ namespace Assign_5_solution
         private static SumsData FinishCreateSumsData(int number, byte[] currSums)
         {
             List<int> newSums = new List<int>();
-            HashSet<int> uniques = new HashSet<int>();
+            List<int> uniques = new List<int>();
 
             for (int i = 0; i < currSums.Length; i++)
             {
@@ -281,14 +281,10 @@ namespace Assign_5_solution
             SumsData sumData = bestData.Data;
 
             int highestSum = sortedSums[sortedSums.Length - 1] + 1;
-            HashSet<int> filteredSums = new HashSet<int>();
-            foreach (var sum in sortedSums)
+            HashSet<int> filteredSums = new HashSet<int>(sortedSums);
+            foreach (var unique in sumData.Uniques)
             {
-                if (sumData.Uniques.Contains(sum))
-                {
-                    continue;
-                }
-                filteredSums.Add(sum);
+                filteredSums.Remove(unique);
             }
 
             for (int i = 1; i <= highestSum; i++)
