@@ -203,19 +203,7 @@ namespace Assign_5_solution
             int prevMaxSum = currSums.Length - 1;
             for (int i = 0; i < numbers.Length; i++)
             {
-                int z = prevMaxSum;
-                for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
-                {
-                    Vector<byte> left = new Vector<byte>(newSums, z - Vector<byte>.Count + 1);
-                    Vector<byte> right = new Vector<byte>(newSums, z - Vector<byte>.Count + numbers[i] + 1);
-
-                    Vector<byte> result = (left | right);
-                    result.CopyTo(newSums, z - Vector<byte>.Count + numbers[i] + 1);
-                }
-                for (; z >= 0; z--)
-                {
-                    newSums[z + numbers[i]] |= newSums[z];
-                }
+                AddNumberToSums(newSums, numbers[i], prevMaxSum);
                 prevMaxSum += numbers[i];
             }
 
@@ -281,23 +269,28 @@ namespace Assign_5_solution
                 {
                     return i;
                 }
-                int z = prevMaxSum;
-                for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
-                {
-                    Vector<byte> left = new Vector<byte>(newSums, z - Vector<byte>.Count + 1);
-                    Vector<byte> right = new Vector<byte>(newSums, z - Vector<byte>.Count + numbers[i] + 1);
-
-                    Vector<byte> result = (left | right);
-                    result.CopyTo(newSums, z - Vector<byte>.Count + numbers[i] + 1);
-                }
-                for (; z >= 0; z--)
-                {
-                    newSums[z + numbers[i]] |= newSums[z];
-                }
+                AddNumberToSums(newSums, numbers[i], prevMaxSum);
                 prevMaxSum += numbers[i];
             }
 
             return numbers.Length;
+        }
+
+        private static void AddNumberToSums(byte[] sums, int number, int maxSum)
+        {
+            int z = maxSum;
+            for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
+            {
+                Vector<byte> left = new Vector<byte>(sums, z - Vector<byte>.Count + 1);
+                Vector<byte> right = new Vector<byte>(sums, z - Vector<byte>.Count + number + 1);
+
+                Vector<byte> result = (left | right);
+                result.CopyTo(sums, z - Vector<byte>.Count + number + 1);
+            }
+            for (; z >= 0; z--)
+            {
+                sums[z + number] |= sums[z];
+            }
         }
 
         private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, BestSumsData bestData)
