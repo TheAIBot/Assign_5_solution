@@ -315,14 +315,6 @@ namespace Assign_5_solution
                         foundObstacle = true;
                         break;
                     }
-
-                    int offset = 0;
-                    while (filteredSums.Contains(overlapIndex + offset))
-                    {
-                        offset++;
-                    }
-
-                    i += offset;
                 }
 
                 if (!foundObstacle)
