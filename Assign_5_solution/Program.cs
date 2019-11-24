@@ -253,22 +253,28 @@ namespace Assign_5_solution
                 maxSum += numbers[i];
             }
 
-            bool[] newSums = new bool[maxSum];
-            newSums[0] = true;
+            byte[] newSums = new byte[maxSum];
+            newSums[0] = 1;
 
             int prevMaxSum = 0;
             for (int i = 0; i < numbers.Length; i++)
             {
-                if (newSums[numbers[i]])
+                if (newSums[numbers[i]] == 1)
                 {
                     return i;
                 }
-                for (int z = prevMaxSum; z >= 0; z--)
+                int z = prevMaxSum;
+                for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
                 {
-                    if (newSums[z])
-                    {
-                        newSums[z + numbers[i]] = true;
-                    }
+                    Vector<byte> left = new Vector<byte>(newSums, z - Vector<byte>.Count + 1);
+                    Vector<byte> right = new Vector<byte>(newSums, z - Vector<byte>.Count + numbers[i] + 1);
+
+                    Vector<byte> result = (left | right);
+                    result.CopyTo(newSums, z - Vector<byte>.Count + numbers[i] + 1);
+                }
+                for (; z >= 0; z--)
+                {
+                    newSums[z + numbers[i]] |= newSums[z];
                 }
                 prevMaxSum += numbers[i];
             }
