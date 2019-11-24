@@ -85,6 +85,27 @@ namespace Assign_5_solution
             }
         }
 
+        internal class PartialSumsData
+        {
+            public HashSet<int> FoundData;
+            public BestSumsData Datas;
+            public int Minuniques;
+            public int SumsCount;
+            public int Created;
+            public int MaxCreated;
+            public int[] Sums;
+
+            internal PartialSumsData()
+            {
+                FoundData = new HashSet<int>();
+                Datas = new BestSumsData();
+                Minuniques = int.MaxValue;
+                SumsCount = -1;
+                Created = 0;
+                Sums = null;
+            }
+        }
+
         public static (int number, int newNumber) Solve(int[] numbers)
         {
             Array.Sort(numbers);
@@ -93,17 +114,14 @@ namespace Assign_5_solution
             byte[] currSums = new byte[1];
             currSums[0] = 1;
 
-            HashSet<int> foundData = new HashSet<int>();
-            BestSumsData bestData = new BestSumsData();
-            int bestUniquesCount = int.MaxValue;
-            int created = 0;
-            int[] sums = null;
-            CreateAllSumsDatas(numbers, currSums, foundData, ref bestData, ref bestUniquesCount, -1, ref created, maxCreated, ref sums);
+            PartialSumsData data = new PartialSumsData();
+            data.MaxCreated = maxCreated;
+            CreateAllSumsDatas(numbers, currSums, data);
 
-            return CreateCollisionAvoidanceArray(sums, bestData);
+            return CreateCollisionAvoidanceArray(data.Sums, data.Datas);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, byte[] currSums, HashSet<int> foundData, ref BestSumsData datas, ref int minuniques, int sumsCount, ref int created, int maxCreated, ref int[] sums)
+        private static void CreateAllSumsDatas(Span<int> numbers, byte[] currSums, PartialSumsData data)
         {
             if (numbers.Length > 1)
             {
@@ -111,50 +129,50 @@ namespace Assign_5_solution
                 Span<int> firstPart = numbers.Slice(0, midPoint);
                 Span<int> secondPart = numbers.Slice(midPoint);
 
-                if (created > maxCreated)
+                if (data.Created > data.MaxCreated)
                 {
                     return;
                 }
 
                 byte[] secondPartSums = CreatePartialSums(secondPart, currSums);
-                CreateAllSumsDatas(firstPart, secondPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated, ref sums);
+                CreateAllSumsDatas(firstPart, secondPartSums, data);
 
-                if (created > maxCreated)
+                if (data.Created > data.MaxCreated)
                 {
                     return;
                 }
 
                 byte[] firstPartSums = CreatePartialSums(firstPart, currSums);
-                CreateAllSumsDatas(secondPart, firstPartSums, foundData, ref datas, ref minuniques, sumsCount, ref created, maxCreated, ref sums);
+                CreateAllSumsDatas(secondPart, firstPartSums, data);
             }
             else
             {
-                created++;
+                data.Created++;
 
                 int actualSumCount = BoolArrayTrueCount(currSums);
-                if (sumsCount - actualSumCount > minuniques)
+                if (data.SumsCount - actualSumCount > data.Minuniques)
                 {
                     return;
                 }
 
                 int number = numbers[0];
-                if (!foundData.Contains(number))
+                if (!data.FoundData.Contains(number))
                 {
                     BestSumsData newData = new BestSumsData(number, FinishCreateSumsData(number, currSums));
 
-                    if (newData.Data.Replications > datas.Data.Replications ||
-                        (newData.Data.Replications == datas.Data.Replications &&
-                        newData.Number < datas.Number))
+                    if (newData.Data.Replications > data.Datas.Data.Replications ||
+                        (newData.Data.Replications == data.Datas.Data.Replications &&
+                        newData.Number < data.Datas.Number))
                     {
-                        datas = newData;
+                        data.Datas = newData;
                     }
 
-                    if (sumsCount == -1)
+                    if (data.SumsCount == -1)
                     {
-                        CreateAllSums(number, ref sumsCount, currSums, ref sums);
+                        CreateAllSums(number, currSums, data);
                     }
 
-                    minuniques = Math.Min(minuniques, datas.Data.Uniques.Count);
+                    data.Minuniques = Math.Min(data.Minuniques, data.Datas.Data.Uniques.Count);
                 }
             }
         }
@@ -229,18 +247,18 @@ namespace Assign_5_solution
             return new SumsData(newSums, uniques);
         }
 
-        private static void CreateAllSums(int number, ref int sumsCount, byte[] currSums, ref int[] sums)
+        private static void CreateAllSums(int number, byte[] currSums, PartialSumsData data)
         {
             byte[] allSums = CreatePartialSums(new int[] { number }, currSums);
-            sumsCount = BoolArrayTrueCount(allSums);
+            data.SumsCount = BoolArrayTrueCount(allSums);
 
-            sums = new int[sumsCount - 1];
+            data.Sums = new int[data.SumsCount - 1];
             int sumsIndex = 0;
             for (int i = 1; i < allSums.Length; i++)
             {
                 if (allSums[i] == 1)
                 {
-                    sums[sumsIndex++] = i;
+                    data.Sums[sumsIndex++] = i;
                 }
             }
         }
