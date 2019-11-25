@@ -312,6 +312,14 @@ namespace Assign_5_solution
                     int overlapIndex = newSum - (bestData.Number - i);
                     if (filteredSums.Contains(overlapIndex))
                     {
+                        int offset = 0;
+                        while (filteredSums.Contains(overlapIndex + offset + 1))
+                        {
+                            offset++;
+                        }
+
+                        i += offset;
+
                         foundObstacle = true;
                         break;
                     }
