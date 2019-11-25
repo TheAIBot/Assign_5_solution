@@ -93,7 +93,7 @@ namespace Assign_5_solution
             public int SumsCount;
             public int Created;
             public int MaxCreated;
-            public int[] Sums;
+            public byte[] Sums;
 
             internal PartialSumsData()
             {
@@ -237,18 +237,8 @@ namespace Assign_5_solution
 
         private static void CreateAllSums(int number, byte[] currSums, PartialSumsData data)
         {
-            byte[] allSums = CreatePartialSums(new int[] { number }, currSums);
-            data.SumsCount = BoolArrayTrueCount(allSums);
-
-            data.Sums = new int[data.SumsCount - 1];
-            int sumsIndex = 0;
-            for (int i = 1; i < allSums.Length; i++)
-            {
-                if (allSums[i] == 1)
-                {
-                    data.Sums[sumsIndex++] = i;
-                }
-            }
+            data.Sums = CreatePartialSums(new int[] { number }, currSums);
+            data.SumsCount = BoolArrayTrueCount(data.Sums);
         }
 
         private static int GetFirstReplicateIndex(int[] numbers)
@@ -293,33 +283,29 @@ namespace Assign_5_solution
             }
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(int[] sortedSums, BestSumsData bestData)
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(byte[] sums, BestSumsData bestData)
         {
             SumsData sumData = bestData.Data;
-
-            int highestSum = sortedSums[sortedSums.Length - 1] + 1;
-            HashSet<int> filteredSums = new HashSet<int>(sortedSums);
             foreach (var unique in sumData.Uniques)
             {
-                filteredSums.Remove(unique);
+                sums[unique] = 0;
             }
 
-            for (int i = 1; i <= highestSum; i++)
+            for (int i = 1; i <= sums.Length;)
             {
                 bool foundObstacle = false;
                 foreach (var newSum in sumData.NewSums)
                 {
                     int overlapIndex = newSum - (bestData.Number - i);
-                    if (filteredSums.Contains(overlapIndex))
+                    int offset = 0;
+                    while (overlapIndex + offset < sums.Length && sums[overlapIndex + offset] == 1)
                     {
-                        int offset = 0;
-                        while (filteredSums.Contains(overlapIndex + offset + 1))
-                        {
-                            offset++;
-                        }
+                        offset++;
+                    }
 
-                        i += offset;
-
+                    i += offset;
+                    if (offset > 0)
+                    {
                         foundObstacle = true;
                         break;
                     }
