@@ -11,7 +11,8 @@ namespace TestsCreator
             int startTestNumber = 131;
             int testCount = 370;
 
-            StringBuilder sBuilder = new StringBuilder();
+            StringBuilder sBuilderCSharp = new StringBuilder();
+            StringBuilder sBuilderCPP = new StringBuilder();
 
             Random rand = new Random(13788134);
             for (int i = 0; i < testCount; i++)
@@ -26,22 +27,22 @@ namespace TestsCreator
 
                 var result = Assign_5_solution.Program.Solve(numbers);
 
-                //string test =
-                //    $@"
-                //[TestMethod]
-                //public void TestMethod{(i + startTestNumber).ToString().PadLeft(3, '0')}()
-                //{{
-                //    int[] numbers = new int[] {{ {string.Join(", ", numbers)} }};
+                string testCSharp =
+                    $@"
+                [TestMethod]
+                public void TestMethod{(i + startTestNumber).ToString().PadLeft(3, '0')}()
+                {{
+                    int[] numbers = new int[] {{ {string.Join(", ", numbers)} }};
 
-                //    var result = Program.Solve(numbers);
-                //    Assert.AreEqual({result.number}, result.number);
-                //    Assert.AreEqual({result.newNumber}, result.newNumber);
-                //}}";
-                //sBuilder.Append(test);
-                //sBuilder.AppendLine();
-                //sBuilder.AppendLine();
+                    var result = Program.Solve(numbers);
+                    Assert.AreEqual({result.number}, result.number);
+                    Assert.AreEqual({result.newNumber}, result.newNumber);
+                }}";
+                sBuilderCSharp.Append(testCSharp);
+                sBuilderCSharp.AppendLine();
+                sBuilderCSharp.AppendLine();
 
-                string test =
+                string testCPP =
 $@"
 TEST_METHOD(TestMethod{(i + startTestNumber).ToString().PadLeft(3, '0')})
 {{
@@ -51,12 +52,13 @@ TEST_METHOD(TestMethod{(i + startTestNumber).ToString().PadLeft(3, '0')})
 	Assert::AreEqual({result.number}, result.Number);
 	Assert::AreEqual({result.newNumber}, result.NewNumber);
 }};";
-                sBuilder.Append(test);
-                sBuilder.AppendLine();
-                sBuilder.AppendLine();
+                sBuilderCPP.Append(testCPP);
+                sBuilderCPP.AppendLine();
+                sBuilderCPP.AppendLine();
             }
 
-            File.WriteAllText("tests.txt", sBuilder.ToString());
+            File.WriteAllText("testsCSharp.txt", sBuilderCSharp.ToString());
+            File.WriteAllText("testsCPP.txt", sBuilderCPP.ToString());
             //Console.WriteLine(sBuilder.ToString());
         }
     }
