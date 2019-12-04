@@ -505,8 +505,8 @@ namespace Assign_5_solution
 
                 fixed (byte* sumsPtr = sums.Bytes)
                 {
-                    byte* currSumPtr = (byte*)(sumsPtr + currSumIndices.ByteIndex + 1);
-                    byte* newSumPtr = (byte*)(sumsPtr + newSumIndices.ByteIndex + 1);
+                    byte* currSumPtr = sumsPtr + currSumIndices.ByteIndex + 1;
+                    byte* newSumPtr = sumsPtr + newSumIndices.ByteIndex + 1;
                     switch (currSumIndices.BitIndex - newSumIndices.BitIndex)
                     {
                         case -7:
@@ -549,13 +549,13 @@ namespace Assign_5_solution
             do
             {
                 Vector128<byte> fromSum = nextSet;
-                currSumPtr = (byte*)(((byte*)currSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                currSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
                 toShift = Avx.LoadDquVector128(currSumPtr);
                 moved1ByteLeft = Avx.ShiftLeftLogical128BitLane(toShift, 1);
                 nextSet = Avx.Or(Avx.ShiftLeftLogical(toShift.AsInt16(), (byte)leftShift), Avx.ShiftRightLogical(moved1ByteLeft.AsInt16(), (byte)(8 - leftShift))).AsByte();
 
                 Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
-                newSumPtr = (byte*)(((byte*)newSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
 
                 z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
             } while (z >= sizeof(Vector128<byte>) * 8);
@@ -571,11 +571,11 @@ namespace Assign_5_solution
             do
             {
                 Vector128<byte> fromSum = nextSet;
-                currSumPtr = (byte*)(((byte*)currSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                currSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
                 nextSet = Avx.LoadDquVector128(currSumPtr);
 
                 Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
-                newSumPtr = (byte*)(((byte*)newSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
 
                 z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
             } while (z >= sizeof(Vector128<byte>) * 8);
@@ -593,13 +593,13 @@ namespace Assign_5_solution
             do
             {
                 Vector128<byte> fromSum = nextSet;
-                currSumPtr = (byte*)(((byte*)currSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                currSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
                 toShift = Avx.LoadDquVector128(currSumPtr);
                 moved1ByteRight = Avx.ShiftRightLogical128BitLane(toShift, 1);
                 nextSet = Avx.Or(Avx.ShiftRightLogical(toShift.AsInt16(), (byte)rightShift), Avx.ShiftLeftLogical(moved1ByteRight.AsInt16(), (byte)(8 - rightShift))).AsByte();
 
                 Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
-                newSumPtr = (byte*)(((byte*)newSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
 
                 z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
             } while (z >= sizeof(Vector128<byte>) * 8);
