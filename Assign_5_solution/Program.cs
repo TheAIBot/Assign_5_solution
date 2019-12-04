@@ -44,6 +44,49 @@ namespace Assign_5_solution
             Console.WriteLine(result.newNumber);
         }
 
+        internal readonly struct PreSumsData
+        {
+            internal readonly BitArraySlim BitArray;
+            internal readonly int Uniques;
+
+            internal PreSumsData(BitArraySlim bits, int uniqs)
+            {
+                BitArray = bits;
+                Uniques = uniqs;
+            }
+
+            internal PreSumsData(bool _)
+            {
+                BitArray = null;
+                Uniques = int.MaxValue;
+            }
+
+            internal SumsData ToSumsData(int number, int totalSums)
+            {
+                List<int> newSums = new List<int>(totalSums);
+                List<int> uniques = new List<int>(Uniques);
+
+                for (int i = 0; i < BitArray.Length; i++)
+                {
+                    if (BitArray[i] == 1)
+                    {
+                        int newSum = i + number;
+                        if (newSum >= BitArray.Length)
+                        {
+                            uniques.Add(newSum);
+                        }
+                        else if (BitArray[newSum] == 0)
+                        {
+                            uniques.Add(newSum);
+                        }
+                        newSums.Add(newSum);
+                    }
+                }
+
+                return new SumsData(newSums, uniques);
+            }
+        }
+
         internal readonly struct BitArrayIndices
         {
             internal readonly int ByteIndex;
@@ -125,14 +168,14 @@ namespace Assign_5_solution
         internal class BestSumsData
         {
             public readonly int Number;
-            public readonly SumsData Data;
+            public readonly PreSumsData Data;
 
             public BestSumsData()
             {
-                this.Data = new SumsData(null, null, int.MinValue);
+                this.Data = new PreSumsData(false);
             }
 
-            public BestSumsData(int number, SumsData data)
+            public BestSumsData(int number, PreSumsData data)
             {
                 this.Number = number;
                 this.Data = data;
@@ -172,7 +215,7 @@ namespace Assign_5_solution
             data.MaxCreated = maxCreated;
             CreateAllSumsDatas(numbers, currSums, data);
 
-            return CreateCollisionAvoidanceArray(data.Sums, data.Datas);
+            return CreateCollisionAvoidanceArray(data.Sums, data.Datas, data);
         }
 
         private static void CreateAllSumsDatas(Span<int> numbers, BitArraySlim currSums, PartialSumsData data)
@@ -212,21 +255,15 @@ namespace Assign_5_solution
                 int number = numbers[0];
                 if (!data.FoundData.Contains(number))
                 {
-                    BestSumsData newData = new BestSumsData(number, FinishCreateSumsData(number, currSums));
+                    BestSumsData newData = new BestSumsData(number, FinishCreateSumsData(number, currSums, actualSumCount, data));
+                    data.Minuniques = Math.Min(data.Minuniques, data.Datas.Data.Uniques);
 
-                    if (newData.Data.Replications > data.Datas.Data.Replications ||
-                        (newData.Data.Replications == data.Datas.Data.Replications &&
-                        newData.Number < data.Datas.Number))
+                    if (newData.Data.Uniques < data.Datas.Data.Uniques ||
+                        (newData.Data.Uniques == data.Datas.Data.Uniques &&
+                            newData.Number < data.Datas.Number))
                     {
                         data.Datas = newData;
                     }
-
-                    if (data.SumsCount == -1)
-                    {
-                        CreateAllSums(number, currSums, data);
-                    }
-
-                    data.Minuniques = Math.Min(data.Minuniques, data.Datas.Data.Uniques.Count);
                 }
             }
         }
@@ -271,11 +308,21 @@ namespace Assign_5_solution
             return newSums;
         }
 
-        private static SumsData FinishCreateSumsData(int number, BitArraySlim currSums)
+        private static PreSumsData FinishCreateSumsData(int number, BitArraySlim currSums, int currSumsCount, PartialSumsData data)
         {
-            List<int> newSums = new List<int>();
-            List<int> uniques = new List<int>();
+            if (data.SumsCount != -1)
+            {
+                int uniqueSums = data.SumsCount - currSumsCount;
+                return new PreSumsData(currSums, uniqueSums);
+            }
 
+            if (data.SumsCount == -1)
+            {
+                CreateAllSums(number, currSums, data);
+                data.SumsCount = BoolArrayTrueCount(data.Sums);
+            }
+
+            int uniques = 0;
             for (int i = 0; i < currSums.Length; i++)
             {
                 if (currSums[i] == 1)
@@ -283,17 +330,16 @@ namespace Assign_5_solution
                     int newSum = i + number;
                     if (newSum >= currSums.Length)
                     {
-                        uniques.Add(newSum);
+                        uniques++;
                     }
                     else if (currSums[newSum] == 0)
                     {
-                        uniques.Add(newSum);
+                        uniques++;
                     }
-                    newSums.Add(newSum);
                 }
             }
 
-            return new SumsData(newSums, uniques);
+            return new PreSumsData(currSums, uniques);
         }
 
         private static void CreateAllSums(int number, BitArraySlim currSums, PartialSumsData data)
@@ -460,9 +506,9 @@ namespace Assign_5_solution
             return z;
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(BitArraySlim sums, BestSumsData bestData)
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(BitArraySlim sums, BestSumsData bestData, PartialSumsData data)
         {
-            SumsData sumData = bestData.Data;
+            SumsData sumData = bestData.Data.ToSumsData(bestData.Number, data.SumsCount);
             foreach (var unique in sumData.Uniques)
             {
                 sums.ForceSet(unique, 0);
