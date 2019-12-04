@@ -6,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
 namespace Assign_5_solution
@@ -377,27 +378,14 @@ namespace Assign_5_solution
         {
             int z = maxSum;
 
-
-
-
-            //for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
-            //{
-            //    Vector<byte> left = new Vector<byte>(sums, z - Vector<byte>.Count + 1);
-            //    Vector<byte> right = new Vector<byte>(sums, z - Vector<byte>.Count + number + 1);
-
-            //    Vector<byte> result = (left | right);
-            //    result.CopyTo(sums, z - Vector<byte>.Count + number + 1);
-            //}
-
-            z = TryCreateSumsVectorized64bit(sums, number, z);
+            z = TryCreateSumsVectorized128bit(sums, number, z);
+            //z = TryCreateSumsVectorized64bit(sums, number, z);
 
             for (; z >= 0; z--)
             {
                 sums.OrSet(z + number, sums[z]);
             }
         }
-
-
 
         private static unsafe int TryCreateSumsVectorized64bit(BitArraySlim sums, int number, int z)
         {
@@ -503,6 +491,121 @@ namespace Assign_5_solution
             *newSumPtr |= nextSet;
 
             z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            return z;
+        }
+
+        private static unsafe int TryCreateSumsVectorized128bit(BitArraySlim sums, int number, int z)
+        {
+            if (z >= sizeof(Vector128<byte>) * 8 * 2)
+            {
+                z -= sizeof(Vector128<byte>) * 8;
+
+                BitArrayIndices currSumIndices = new BitArrayIndices(z);
+                BitArrayIndices newSumIndices = new BitArrayIndices(z + number);
+
+                fixed (byte* sumsPtr = sums.Bytes)
+                {
+                    byte* currSumPtr = (byte*)(sumsPtr + currSumIndices.ByteIndex + 1);
+                    byte* newSumPtr = (byte*)(sumsPtr + newSumIndices.ByteIndex + 1);
+                    switch (currSumIndices.BitIndex - newSumIndices.BitIndex)
+                    {
+                        case -7:
+                        case -6:
+                        case -5:
+                        case -4:
+                        case -3:
+                        case -2:
+                        case -1:
+                            z = CreateSumsShiftLeft128bit(z, currSumPtr, newSumPtr, newSumIndices.BitIndex - currSumIndices.BitIndex);
+                            break;
+                        case 0:
+                            z = CreateSumsNoShift128bit(z, currSumPtr, newSumPtr);
+                            break;
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                            z = CreateSumsShiftRight128bit(z, currSumPtr, newSumPtr, currSumIndices.BitIndex - newSumIndices.BitIndex);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                z += sizeof(Vector128<byte>) * 8;
+            }
+
+            return z;
+        }
+
+        private static unsafe int CreateSumsShiftLeft128bit(int z, byte* currSumPtr, byte* newSumPtr, int leftShift)
+        {
+            Vector128<byte> toShift = Avx.LoadDquVector128(currSumPtr);
+            Vector128<byte> moved1ByteLeft = Avx.ShiftLeftLogical128BitLane(toShift, 1);
+            Vector128<byte> nextSet = Avx.Or(Avx.ShiftLeftLogical(toShift.AsInt16(), (byte)leftShift), Avx.ShiftRightLogical(moved1ByteLeft.AsInt16(), (byte)(8 - leftShift))).AsByte();
+            do
+            {
+                Vector128<byte> fromSum = nextSet;
+                currSumPtr = (byte*)(((byte*)currSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                toShift = Avx.LoadDquVector128(currSumPtr);
+                moved1ByteLeft = Avx.ShiftLeftLogical128BitLane(toShift, 1);
+                nextSet = Avx.Or(Avx.ShiftLeftLogical(toShift.AsInt16(), (byte)leftShift), Avx.ShiftRightLogical(moved1ByteLeft.AsInt16(), (byte)(8 - leftShift))).AsByte();
+
+                Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
+                newSumPtr = (byte*)(((byte*)newSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+
+                z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            } while (z >= sizeof(Vector128<byte>) * 8);
+            Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
+
+            z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            return z;
+        }
+
+        private static unsafe int CreateSumsNoShift128bit(int z, byte* currSumPtr, byte* newSumPtr)
+        {
+            Vector128<byte> nextSet = Avx.LoadDquVector128(currSumPtr);
+            do
+            {
+                Vector128<byte> fromSum = nextSet;
+                currSumPtr = (byte*)(((byte*)currSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                nextSet = Avx.LoadDquVector128(currSumPtr);
+
+                Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
+                newSumPtr = (byte*)(((byte*)newSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+
+                z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            } while (z >= sizeof(Vector128<byte>) * 8);
+            Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
+
+            z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            return z;
+        }
+
+        private static unsafe int CreateSumsShiftRight128bit(int z, byte* currSumPtr, byte* newSumPtr, int rightShift)
+        {
+            Vector128<byte> toShift = Avx.LoadDquVector128(currSumPtr);
+            Vector128<byte> moved1ByteRight = Avx.ShiftRightLogical128BitLane(toShift, 1);
+            Vector128<byte> nextSet = Avx.Or(Avx.ShiftRightLogical(toShift.AsInt16(), (byte)rightShift), Avx.ShiftLeftLogical(moved1ByteRight.AsInt16(), (byte)(8 - rightShift))).AsByte();
+            do
+            {
+                Vector128<byte> fromSum = nextSet;
+                currSumPtr = (byte*)(((byte*)currSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+                toShift = Avx.LoadDquVector128(currSumPtr);
+                moved1ByteRight = Avx.ShiftRightLogical128BitLane(toShift, 1);
+                nextSet = Avx.Or(Avx.ShiftRightLogical(toShift.AsInt16(), (byte)rightShift), Avx.ShiftLeftLogical(moved1ByteRight.AsInt16(), (byte)(8 - rightShift))).AsByte();
+
+                Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
+                newSumPtr = (byte*)(((byte*)newSumPtr) - (sizeof(Vector128<byte>) - sizeof(byte)));
+
+                z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            } while (z >= sizeof(Vector128<byte>) * 8);
+            Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
+
+            z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
             return z;
         }
 
