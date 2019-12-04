@@ -234,7 +234,14 @@ namespace Assign_5_solution
         private static int BoolArrayTrueCount(BitArraySlim array)
         {
             int trueCount = 0;
-            for (int i = 0; i < array.Length; i++)
+
+            Span<ulong> casted = MemoryMarshal.Cast<byte, ulong>(array.Bytes);
+            for (int i = 0; i < casted.Length; i++)
+            {
+                trueCount += BitOperations.PopCount(casted[i]);
+            }
+
+            for (int i = casted.Length * 64; i < array.Length; i++)
             {
                 trueCount += array[i];
             }
