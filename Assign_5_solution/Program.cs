@@ -42,6 +42,61 @@ namespace Assign_5_solution
             Console.WriteLine(result.newNumber);
         }
 
+        internal readonly struct BitArrayIndices
+        {
+            internal readonly int ByteIndex;
+            internal readonly int BitIndex;
+
+            internal BitArrayIndices(int index)
+            {
+                ByteIndex = index >> 3;
+                BitIndex = index & 0b0000_0111;
+            }
+        }
+
+        internal class BitArraySlim
+        {
+            internal readonly byte[] Bytes;
+            internal readonly int Length;
+
+            internal BitArraySlim(int length)
+            {
+                this.Bytes = new byte[(length / 8) + 1];
+                this.Length = length;
+            }
+
+            public byte this[int index]
+            {
+                get
+                {
+                    BitArrayIndices indices = new BitArrayIndices(index);
+                    return (byte)((Bytes[indices.ByteIndex] >> indices.BitIndex) & 1);
+                }
+                //set
+                //{
+                //    BitArrayIndices indices = new BitArrayIndices(index);
+                //    Bytes[indices.ByteIndex] ^= (byte)((-value ^ Bytes[indices.ByteIndex]) & (1 << indices.BitIndex));
+                //}
+            }
+
+            internal void OrSet(int index, byte val)
+            {
+                BitArrayIndices indices = new BitArrayIndices(index);
+                Bytes[indices.ByteIndex] |= (byte)(val << indices.BitIndex);
+            }
+
+            internal void ForceSet(int index, byte val)
+            {
+                BitArrayIndices indices = new BitArrayIndices(index);
+                Bytes[indices.ByteIndex] ^= (byte)((-val ^ Bytes[indices.ByteIndex]) & (1 << indices.BitIndex));
+            }
+
+            internal void CopyTo(BitArraySlim copyTo)
+            {
+                Array.Copy(Bytes, 0, copyTo.Bytes, 0, Bytes.Length);
+            }
+        }
+
         internal struct SumsData
         {
             public readonly List<int> NewSums;
@@ -93,7 +148,7 @@ namespace Assign_5_solution
             public int SumsCount;
             public int Created;
             public int MaxCreated;
-            public byte[] Sums;
+            public BitArraySlim Sums;
 
             internal PartialSumsData()
             {
@@ -111,8 +166,8 @@ namespace Assign_5_solution
             Array.Sort(numbers);
             int maxCreated = GetFirstReplicateIndex(numbers);
 
-            byte[] currSums = new byte[1];
-            currSums[0] = 1;
+            BitArraySlim currSums = new BitArraySlim(1);
+            currSums.ForceSet(0, 1);
 
             PartialSumsData data = new PartialSumsData();
             data.MaxCreated = maxCreated;
@@ -121,7 +176,7 @@ namespace Assign_5_solution
             return CreateCollisionAvoidanceArray(data.Sums, data.Datas);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, byte[] currSums, PartialSumsData data)
+        private static void CreateAllSumsDatas(Span<int> numbers, BitArraySlim currSums, PartialSumsData data)
         {
             if (numbers.Length > 1)
             {
@@ -134,7 +189,7 @@ namespace Assign_5_solution
                     return;
                 }
 
-                byte[] secondPartSums = CreatePartialSums(secondPart, currSums);
+                BitArraySlim secondPartSums = CreatePartialSums(secondPart, currSums);
                 CreateAllSumsDatas(firstPart, secondPartSums, data);
 
                 if (data.Created > data.MaxCreated)
@@ -142,7 +197,7 @@ namespace Assign_5_solution
                     return;
                 }
 
-                byte[] firstPartSums = CreatePartialSums(firstPart, currSums);
+                BitArraySlim firstPartSums = CreatePartialSums(firstPart, currSums);
                 CreateAllSumsDatas(secondPart, firstPartSums, data);
             }
             else
@@ -177,7 +232,7 @@ namespace Assign_5_solution
             }
         }
 
-        private static int BoolArrayTrueCount(byte[] array)
+        private static int BoolArrayTrueCount(BitArraySlim array)
         {
             int trueCount = 0;
             for (int i = 0; i < array.Length; i++)
@@ -188,7 +243,7 @@ namespace Assign_5_solution
             return trueCount;
         }
 
-        private static byte[] CreatePartialSums(Span<int> numbers, byte[] currSums)
+        private static BitArraySlim CreatePartialSums(Span<int> numbers, BitArraySlim currSums)
         {
             int maxSum = currSums.Length;
             for (int i = 0; i < numbers.Length; i++)
@@ -196,8 +251,8 @@ namespace Assign_5_solution
                 maxSum += numbers[i];
             }
 
-            byte[] newSums = new byte[maxSum];
-            currSums.CopyTo(newSums, 0);
+            BitArraySlim newSums = new BitArraySlim(maxSum);
+            currSums.CopyTo(newSums);
 
 
             int prevMaxSum = currSums.Length - 1;
@@ -210,7 +265,7 @@ namespace Assign_5_solution
             return newSums;
         }
 
-        private static SumsData FinishCreateSumsData(int number, byte[] currSums)
+        private static SumsData FinishCreateSumsData(int number, BitArraySlim currSums)
         {
             List<int> newSums = new List<int>();
             List<int> uniques = new List<int>();
@@ -235,7 +290,7 @@ namespace Assign_5_solution
             return new SumsData(newSums, uniques);
         }
 
-        private static void CreateAllSums(int number, byte[] currSums, PartialSumsData data)
+        private static void CreateAllSums(int number, BitArraySlim currSums, PartialSumsData data)
         {
             data.Sums = CreatePartialSums(new int[] { number }, currSums);
             data.SumsCount = BoolArrayTrueCount(data.Sums);
@@ -249,8 +304,8 @@ namespace Assign_5_solution
                 maxSum += numbers[i];
             }
 
-            byte[] newSums = new byte[maxSum];
-            newSums[0] = 1;
+            BitArraySlim newSums = new BitArraySlim(maxSum);
+            newSums.ForceSet(0, 1);
 
             int prevMaxSum = 0;
             for (int i = 0; i < numbers.Length; i++)
@@ -266,29 +321,29 @@ namespace Assign_5_solution
             return numbers.Length;
         }
 
-        private static void AddNumberToSums(byte[] sums, int number, int maxSum)
+        private static void AddNumberToSums(BitArraySlim sums, int number, int maxSum)
         {
             int z = maxSum;
-            for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
-            {
-                Vector<byte> left = new Vector<byte>(sums, z - Vector<byte>.Count + 1);
-                Vector<byte> right = new Vector<byte>(sums, z - Vector<byte>.Count + number + 1);
+            //for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
+            //{
+            //    Vector<byte> left = new Vector<byte>(sums, z - Vector<byte>.Count + 1);
+            //    Vector<byte> right = new Vector<byte>(sums, z - Vector<byte>.Count + number + 1);
 
-                Vector<byte> result = (left | right);
-                result.CopyTo(sums, z - Vector<byte>.Count + number + 1);
-            }
+            //    Vector<byte> result = (left | right);
+            //    result.CopyTo(sums, z - Vector<byte>.Count + number + 1);
+            //}
             for (; z >= 0; z--)
             {
-                sums[z + number] |= sums[z];
+                sums.OrSet(z + number, sums[z]);
             }
         }
 
-        private static (int number, int newNumber) CreateCollisionAvoidanceArray(byte[] sums, BestSumsData bestData)
+        private static (int number, int newNumber) CreateCollisionAvoidanceArray(BitArraySlim sums, BestSumsData bestData)
         {
             SumsData sumData = bestData.Data;
             foreach (var unique in sumData.Uniques)
             {
-                sums[unique] = 0;
+                sums.ForceSet(unique, 0);
             }
 
             for (int i = 1; i <= sums.Length;)
