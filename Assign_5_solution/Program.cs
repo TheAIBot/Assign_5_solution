@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
 
 namespace Assign_5_solution
 {
@@ -67,18 +69,15 @@ namespace Assign_5_solution
 
             public byte this[int index]
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     BitArrayIndices indices = new BitArrayIndices(index);
                     return (byte)((Bytes[indices.ByteIndex] >> indices.BitIndex) & 1);
                 }
-                //set
-                //{
-                //    BitArrayIndices indices = new BitArrayIndices(index);
-                //    Bytes[indices.ByteIndex] ^= (byte)((-value ^ Bytes[indices.ByteIndex]) & (1 << indices.BitIndex));
-                //}
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal void OrSet(int index, byte val)
             {
                 BitArrayIndices indices = new BitArrayIndices(index);
@@ -324,6 +323,10 @@ namespace Assign_5_solution
         private static void AddNumberToSums(BitArraySlim sums, int number, int maxSum)
         {
             int z = maxSum;
+
+
+
+
             //for (; z >= Vector<byte>.Count; z -= Vector<byte>.Count)
             //{
             //    Vector<byte> left = new Vector<byte>(sums, z - Vector<byte>.Count + 1);
@@ -332,10 +335,122 @@ namespace Assign_5_solution
             //    Vector<byte> result = (left | right);
             //    result.CopyTo(sums, z - Vector<byte>.Count + number + 1);
             //}
+
+            z = TryCreateSumsVectorized64bit(sums, number, z);
+
             for (; z >= 0; z--)
             {
                 sums.OrSet(z + number, sums[z]);
             }
+        }
+
+
+
+        private static unsafe int TryCreateSumsVectorized64bit(BitArraySlim sums, int number, int z)
+        {
+            if (z >= sizeof(ulong) * 8 * 2)
+            {
+                z -= sizeof(ulong) * 8;
+
+                BitArrayIndices currSumIndices  = new BitArrayIndices(z);
+                BitArrayIndices newSumIndices = new BitArrayIndices(z +number);
+
+                fixed (byte* sumsPtr = sums.Bytes)
+                {
+                    ulong* currSumPtr = (ulong*)(sumsPtr + currSumIndices.ByteIndex + 1);
+                    ulong* newSumPtr = (ulong*)(sumsPtr + newSumIndices.ByteIndex + 1);
+                    switch (currSumIndices.BitIndex - newSumIndices.BitIndex)
+                    {
+                        case -7:
+                        case -6:
+                        case -5:
+                        case -4:
+                        case -3:
+                        case -2:
+                        case -1:
+                            z = CreateSumsShiftLeft64bit(z, currSumPtr, newSumPtr, newSumIndices.BitIndex - currSumIndices.BitIndex);
+                            break;
+                        case 0:
+                            z = CreateSumsNoShift64bit(z, currSumPtr, newSumPtr);
+                            break;
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                            z = CreateSumsShiftRight64bit(z, currSumPtr, newSumPtr, currSumIndices.BitIndex - newSumIndices.BitIndex);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                z += sizeof(ulong) * 8;
+            }
+
+            return z;
+        }
+
+        private static unsafe int CreateSumsShiftLeft64bit(int z, ulong* currSumPtr, ulong* newSumPtr, int leftShift)
+        {
+            ulong nextSet = (*currSumPtr) << leftShift;
+            do
+            {
+                ulong fromSum = nextSet;
+                currSumPtr = (ulong*)(((byte*)currSumPtr) - (sizeof(ulong) - sizeof(byte)));
+                nextSet = (*currSumPtr) << leftShift;
+
+                *newSumPtr |= fromSum;
+                newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
+
+                z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            } while (z >= sizeof(ulong) * 8);
+            *newSumPtr |= nextSet;
+
+            z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            return z;
+        }
+
+        private static unsafe int CreateSumsNoShift64bit(int z, ulong* currSumPtr, ulong* newSumPtr)
+        {
+            ulong nextSet = *currSumPtr;
+            do
+            {
+                ulong fromSum = nextSet;
+                currSumPtr = (ulong*)(((byte*)currSumPtr) - (sizeof(ulong) - sizeof(byte)));
+                nextSet = *currSumPtr;
+
+                *newSumPtr |= fromSum;
+                newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
+
+                z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            } while (z >= sizeof(ulong) * 8);
+            *newSumPtr |= nextSet;
+
+            z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            return z;
+        }
+
+        private static unsafe int CreateSumsShiftRight64bit(int z, ulong* currSumPtr, ulong* newSumPtr, int rightShift)
+        {
+            ulong nextSet = (*currSumPtr) >> rightShift;
+            do
+            {
+                ulong fromSum = nextSet;
+                currSumPtr = (ulong*)(((byte*)currSumPtr) - (sizeof(ulong) - sizeof(byte)));
+                nextSet = (*currSumPtr) >> rightShift;
+
+                *newSumPtr |= fromSum;
+                newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
+
+                z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            } while (z >= sizeof(ulong) * 8);
+            *newSumPtr |= nextSet;
+
+            z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            return z;
         }
 
         private static (int number, int newNumber) CreateCollisionAvoidanceArray(BitArraySlim sums, BestSumsData bestData)
