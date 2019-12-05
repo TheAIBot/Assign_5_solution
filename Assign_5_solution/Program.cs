@@ -279,7 +279,7 @@ namespace Assign_5_solution
                 trueCount += BitOperations.PopCount(casted[i]);
             }
 
-            for (int i = casted.Length * 64; i < array.Length; i++)
+            for (int i = casted.Length * BitCount<ulong>(); i < array.Length; i++)
             {
                 trueCount += array[i];
             }
@@ -387,11 +387,16 @@ namespace Assign_5_solution
             }
         }
 
+        private static unsafe int BitCount<T>() where T : unmanaged
+        {
+            return sizeof(T) * 8;
+        }
+
         private static unsafe int TryCreateSumsVectorized64bit(BitArraySlim sums, int number, int z)
         {
-            if (z >= sizeof(ulong) * 8 * 2)
+            if (z >= BitCount<ulong>() * 2)
             {
-                z -= sizeof(ulong) * 8;
+                z -= BitCount<ulong>();
 
                 BitArrayIndices currSumIndices  = new BitArrayIndices(z);
                 BitArrayIndices newSumIndices = new BitArrayIndices(z +number);
@@ -428,7 +433,7 @@ namespace Assign_5_solution
                     }
                 }
 
-                z += sizeof(ulong) * 8;
+                z += BitCount<ulong>();
             }
 
             return z;
@@ -446,11 +451,11 @@ namespace Assign_5_solution
                 *newSumPtr |= fromSum;
                 newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
 
-                z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
-            } while (z >= sizeof(ulong) * 8);
+                z -= (BitCount<ulong>() - BitCount<byte>());
+            } while (z >= BitCount<ulong>());
             *newSumPtr |= nextSet;
 
-            z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            z -= (BitCount<ulong>() - BitCount<byte>());
             return z;
         }
 
@@ -466,11 +471,11 @@ namespace Assign_5_solution
                 *newSumPtr |= fromSum;
                 newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
 
-                z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
-            } while (z >= sizeof(ulong) * 8);
+                z -= (BitCount<ulong>() - BitCount<byte>());
+            } while (z >= BitCount<ulong>());
             *newSumPtr |= nextSet;
 
-            z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            z -= (BitCount<ulong>() - BitCount<byte>());
             return z;
         }
 
@@ -486,19 +491,19 @@ namespace Assign_5_solution
                 *newSumPtr |= fromSum;
                 newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
 
-                z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
-            } while (z >= sizeof(ulong) * 8);
+                z -= (BitCount<ulong>() - BitCount<byte>());
+            } while (z >= BitCount<ulong>());
             *newSumPtr |= nextSet;
 
-            z -= ((sizeof(ulong) * 8) - (sizeof(byte) * 8));
+            z -= (BitCount<ulong>() - BitCount<byte>());
             return z;
         }
 
         private static unsafe int TryCreateSumsVectorized128bit(BitArraySlim sums, int number, int z)
         {
-            if (z >= sizeof(Vector128<byte>) * 8 * 2)
+            if (z >= BitCount<Vector128<byte>>() * 2)
             {
-                z -= sizeof(Vector128<byte>) * 8;
+                z -= BitCount<Vector128<byte>>();
 
                 BitArrayIndices currSumIndices = new BitArrayIndices(z);
                 BitArrayIndices newSumIndices = new BitArrayIndices(z + number);
@@ -535,7 +540,7 @@ namespace Assign_5_solution
                     }
                 }
 
-                z += sizeof(Vector128<byte>) * 8;
+                z += BitCount<Vector128<byte>>();
             }
 
             return z;
@@ -557,11 +562,11 @@ namespace Assign_5_solution
                 Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
                 newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
 
-                z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
-            } while (z >= sizeof(Vector128<byte>) * 8);
+                z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
+            } while (z >= BitCount<Vector128<byte>>());
             Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
 
-            z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
             return z;
         }
 
@@ -577,11 +582,11 @@ namespace Assign_5_solution
                 Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
                 newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
 
-                z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
-            } while (z >= sizeof(Vector128<byte>) * 8);
+                z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
+            } while (z >= BitCount<Vector128<byte>>());
             Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
 
-            z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
             return z;
         }
 
@@ -601,11 +606,11 @@ namespace Assign_5_solution
                 Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
                 newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
 
-                z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
-            } while (z >= sizeof(Vector128<byte>) * 8);
+                z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
+            } while (z >= BitCount<Vector128<byte>>());
             Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
 
-            z -= ((sizeof(Vector128<byte>) * 8) - (sizeof(byte) * 8));
+            z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
             return z;
         }
 
