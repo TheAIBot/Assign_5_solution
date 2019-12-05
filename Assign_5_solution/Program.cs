@@ -190,7 +190,6 @@ namespace Assign_5_solution
             public int Minuniques;
             public int SumsCount;
             public int Created;
-            public int MaxCreated;
             public BitArraySlim Sums;
 
             internal PartialSumsData()
@@ -207,13 +206,11 @@ namespace Assign_5_solution
         public static (int number, int newNumber) Solve(int[] numbers)
         {
             Array.Sort(numbers);
-            int maxCreated = GetFirstReplicateIndex(numbers);
 
             BitArraySlim currSums = new BitArraySlim(1);
             currSums.ForceSet(0, 1);
 
             PartialSumsData data = new PartialSumsData();
-            data.MaxCreated = maxCreated;
             CreateAllSumsDatas(numbers, currSums, data);
 
             return CreateCollisionAvoidanceArray(data.Sums, data.Datas, data);
@@ -227,18 +224,8 @@ namespace Assign_5_solution
                 Span<int> firstPart = numbers.Slice(0, midPoint);
                 Span<int> secondPart = numbers.Slice(midPoint);
 
-                if (data.Created > data.MaxCreated)
-                {
-                    return;
-                }
-
                 BitArraySlim secondPartSums = CreatePartialSums(secondPart, currSums);
                 CreateAllSumsDatas(firstPart, secondPartSums, data);
-
-                if (data.Created > data.MaxCreated)
-                {
-                    return;
-                }
 
                 BitArraySlim firstPartSums = CreatePartialSums(firstPart, currSums);
                 CreateAllSumsDatas(secondPart, firstPartSums, data);
@@ -347,31 +334,6 @@ namespace Assign_5_solution
         {
             data.Sums = CreatePartialSums(new int[] { number }, currSums);
             data.SumsCount = BoolArrayTrueCount(data.Sums);
-        }
-
-        private static int GetFirstReplicateIndex(int[] numbers)
-        {
-            int maxSum = 1;
-            for (int i = 0; i < numbers.Length; i++)
-            {
-                maxSum += numbers[i];
-            }
-
-            BitArraySlim newSums = new BitArraySlim(maxSum);
-            newSums.ForceSet(0, 1);
-
-            int prevMaxSum = 0;
-            for (int i = 0; i < numbers.Length; i++)
-            {
-                if (newSums[numbers[i]] == 1)
-                {
-                    return i;
-                }
-                AddNumberToSums(newSums, numbers[i], prevMaxSum);
-                prevMaxSum += numbers[i];
-            }
-
-            return numbers.Length;
         }
 
         private static void AddNumberToSums(BitArraySlim sums, int number, int maxSum)
