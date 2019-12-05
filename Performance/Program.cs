@@ -8,7 +8,7 @@ namespace Performance
     {
 
         //[Params(50, 200, 500, 1000)]
-        [Params(100, 200, 400)]
+        [Params(100, 200, 400, 1000, 2000)]
         public int N;
 
         private int[] Numbers;
