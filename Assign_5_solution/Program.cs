@@ -95,48 +95,52 @@ namespace Assign_5_solution
 
             internal BitArrayIndices(int index)
             {
-                ByteIndex = index >> 3;
-                BitIndex = index & 0b0000_0111;
+                ByteIndex = index / BitCount<ulong>();
+                BitIndex = index & (BitCount<ulong>() - 1);
             }
         }
 
         internal class BitArraySlim
         {
-            internal readonly byte[] Bytes;
+            internal readonly ulong[] Bytes;
             internal readonly int Length;
+            private readonly int ArrayLength;
 
             internal BitArraySlim(int length)
             {
-                this.Bytes = new byte[(length / 8) + 1];
+                this.ArrayLength = (length / BitCount<Vector256<byte>>()) + 2;
+                this.ArrayLength *= BitCount<Vector256<byte>>() / BitCount<ulong>();
+
+                this.Bytes = new ulong[ArrayLength];
                 this.Length = length;
             }
 
-            public byte this[int index]
+            public ulong this[int index]
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     BitArrayIndices indices = new BitArrayIndices(index);
-                    return (byte)((Bytes[indices.ByteIndex] >> indices.BitIndex) & 1);
+                    return ((Bytes[indices.ByteIndex] >> indices.BitIndex) & 1);
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal void OrSet(int index, byte val)
+            internal void OrSet(int index, ulong val)
             {
                 BitArrayIndices indices = new BitArrayIndices(index);
-                Bytes[indices.ByteIndex] |= (byte)(val << indices.BitIndex);
+                Bytes[indices.ByteIndex] |= (val << indices.BitIndex);
             }
 
-            internal void ForceSet(int index, byte val)
+            internal void ForceSet(int index, ulong val)
             {
                 BitArrayIndices indices = new BitArrayIndices(index);
-                Bytes[indices.ByteIndex] ^= (byte)((-val ^ Bytes[indices.ByteIndex]) & (1 << indices.BitIndex));
+                Bytes[indices.ByteIndex] ^= (((ulong)(-(long)val) ^ Bytes[indices.ByteIndex]) & (1ul << indices.BitIndex));
             }
 
             internal void CopyTo(BitArraySlim copyTo)
             {
-                Array.Copy(Bytes, 0, copyTo.Bytes, 0, Bytes.Length);
+                Array.Copy(Bytes, 0, copyTo.Bytes, 0, ArrayLength);
             }
         }
 
@@ -259,16 +263,9 @@ namespace Assign_5_solution
         private static int BoolArrayTrueCount(BitArraySlim array)
         {
             int trueCount = 0;
-
-            Span<ulong> casted = MemoryMarshal.Cast<byte, ulong>(array.Bytes);
-            for (int i = 0; i < casted.Length; i++)
+            for (int i = 0; i < array.Bytes.Length; i++)
             {
-                trueCount += BitOperations.PopCount(casted[i]);
-            }
-
-            for (int i = casted.Length * BitCount<ulong>(); i < array.Length; i++)
-            {
-                trueCount += array[i];
+                trueCount += BitOperations.PopCount(array.Bytes[i]);
             }
 
             return trueCount;
@@ -285,11 +282,11 @@ namespace Assign_5_solution
             BitArraySlim newSums = new BitArraySlim(maxSum);
             currSums.CopyTo(newSums);
 
-
             int prevMaxSum = currSums.Length - 1;
             for (int i = 0; i < numbers.Length; i++)
             {
-                AddNumberToSums(newSums, numbers[i], prevMaxSum);
+                CreateSumsVectorized128bit(prevMaxSum, numbers[i], newSums);
+                //CreateSumsVectorized64bit(prevMaxSum, numbers[i], newSums);
                 prevMaxSum += numbers[i];
             }
 
@@ -336,244 +333,90 @@ namespace Assign_5_solution
             data.SumsCount = BoolArrayTrueCount(data.Sums);
         }
 
-        private static void AddNumberToSums(BitArraySlim sums, int number, int maxSum)
-        {
-            int z = maxSum;
-
-            z = TryCreateSumsVectorized128bit(sums, number, z);
-            //z = TryCreateSumsVectorized64bit(sums, number, z);
-
-            for (; z >= 0; z--)
-            {
-                sums.OrSet(z + number, sums[z]);
-            }
-        }
-
         private static unsafe int BitCount<T>() where T : unmanaged
         {
             return sizeof(T) * 8;
         }
 
-        private static unsafe int TryCreateSumsVectorized64bit(BitArraySlim sums, int number, int z)
+        private static unsafe void CreateSumsVectorized128bit(int z, int number, BitArraySlim newSums)
         {
-            if (z >= BitCount<ulong>() * 2)
+            BitArrayIndices numberOffset = new BitArrayIndices(number);
+
+            int length = ((z + number) / BitCount<ulong>());
+            fixed (ulong* arr = newSums.Bytes)
             {
-                z -= BitCount<ulong>();
+                ulong* lastPtr = arr + length;
+                ulong* currPtr = lastPtr - numberOffset.ByteIndex;
 
-                BitArrayIndices currSumIndices  = new BitArrayIndices(z);
-                BitArrayIndices newSumIndices = new BitArrayIndices(z +number);
+                int sizeFromUint = sizeof(Vector128<ulong>) / sizeof(ulong);
+                int iterations = length - numberOffset.ByteIndex;
+                int rest = iterations % sizeFromUint;
+                iterations += rest;
+                lastPtr += rest;
+                currPtr += rest;
 
-                fixed (byte* sumsPtr = sums.Bytes)
+                if (numberOffset.BitIndex % BitCount<byte>() == 0)
                 {
-                    ulong* currSumPtr = (ulong*)(sumsPtr + currSumIndices.ByteIndex + 1);
-                    ulong* newSumPtr = (ulong*)(sumsPtr + newSumIndices.ByteIndex + 1);
-                    switch (currSumIndices.BitIndex - newSumIndices.BitIndex)
+                    int offset = numberOffset.BitIndex / BitCount<byte>();
+                    lastPtr = (ulong*)(((byte*)lastPtr) + offset);
+
+                    for (int i = 0; i <= iterations; i += sizeFromUint)
                     {
-                        case -7:
-                        case -6:
-                        case -5:
-                        case -4:
-                        case -3:
-                        case -2:
-                        case -1:
-                            z = CreateSumsShiftLeft64bit(z, currSumPtr, newSumPtr, newSumIndices.BitIndex - currSumIndices.BitIndex);
-                            break;
-                        case 0:
-                            z = CreateSumsNoShift64bit(z, currSumPtr, newSumPtr);
-                            break;
-                        case 1:
-                        case 2:
-                        case 3:
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                            z = CreateSumsShiftRight64bit(z, currSumPtr, newSumPtr, currSumIndices.BitIndex - newSumIndices.BitIndex);
-                            break;
-                        default:
-                            break;
+                        Avx.Store(lastPtr - i, Avx.Or(Avx.LoadVector128(lastPtr - i), Avx.LoadVector128(currPtr - i)));
                     }
                 }
-
-                z += BitCount<ulong>();
-            }
-
-            return z;
-        }
-
-        private static unsafe int CreateSumsShiftLeft64bit(int z, ulong* currSumPtr, ulong* newSumPtr, int leftShift)
-        {
-            ulong nextSet = (*currSumPtr) << leftShift;
-            do
-            {
-                ulong fromSum = nextSet;
-                currSumPtr = (ulong*)(((byte*)currSumPtr) - (sizeof(ulong) - sizeof(byte)));
-                nextSet = (*currSumPtr) << leftShift;
-
-                *newSumPtr |= fromSum;
-                newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
-
-                z -= (BitCount<ulong>() - BitCount<byte>());
-            } while (z >= BitCount<ulong>());
-            *newSumPtr |= nextSet;
-
-            z -= (BitCount<ulong>() - BitCount<byte>());
-            return z;
-        }
-
-        private static unsafe int CreateSumsNoShift64bit(int z, ulong* currSumPtr, ulong* newSumPtr)
-        {
-            ulong nextSet = *currSumPtr;
-            do
-            {
-                ulong fromSum = nextSet;
-                currSumPtr = (ulong*)(((byte*)currSumPtr) - (sizeof(ulong) - sizeof(byte)));
-                nextSet = *currSumPtr;
-
-                *newSumPtr |= fromSum;
-                newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
-
-                z -= (BitCount<ulong>() - BitCount<byte>());
-            } while (z >= BitCount<ulong>());
-            *newSumPtr |= nextSet;
-
-            z -= (BitCount<ulong>() - BitCount<byte>());
-            return z;
-        }
-
-        private static unsafe int CreateSumsShiftRight64bit(int z, ulong* currSumPtr, ulong* newSumPtr, int rightShift)
-        {
-            ulong nextSet = (*currSumPtr) >> rightShift;
-            do
-            {
-                ulong fromSum = nextSet;
-                currSumPtr = (ulong*)(((byte*)currSumPtr) - (sizeof(ulong) - sizeof(byte)));
-                nextSet = (*currSumPtr) >> rightShift;
-
-                *newSumPtr |= fromSum;
-                newSumPtr = (ulong*)(((byte*)newSumPtr) - (sizeof(ulong) - sizeof(byte)));
-
-                z -= (BitCount<ulong>() - BitCount<byte>());
-            } while (z >= BitCount<ulong>());
-            *newSumPtr |= nextSet;
-
-            z -= (BitCount<ulong>() - BitCount<byte>());
-            return z;
-        }
-
-        private static unsafe int TryCreateSumsVectorized128bit(BitArraySlim sums, int number, int z)
-        {
-            if (z >= BitCount<Vector128<byte>>() * 2)
-            {
-                z -= BitCount<Vector128<byte>>();
-
-                BitArrayIndices currSumIndices = new BitArrayIndices(z);
-                BitArrayIndices newSumIndices = new BitArrayIndices(z + number);
-
-                fixed (byte* sumsPtr = sums.Bytes)
+                else
                 {
-                    byte* currSumPtr = sumsPtr + currSumIndices.ByteIndex + 1;
-                    byte* newSumPtr = sumsPtr + newSumIndices.ByteIndex + 1;
-                    switch (currSumIndices.BitIndex - newSumIndices.BitIndex)
+                    for (int i = 1; i < iterations + 1; i += sizeFromUint)
                     {
-                        case -7:
-                        case -6:
-                        case -5:
-                        case -4:
-                        case -3:
-                        case -2:
-                        case -1:
-                            z = CreateSumsShiftLeft128bit(z, currSumPtr, newSumPtr, newSumIndices.BitIndex - currSumIndices.BitIndex);
-                            break;
-                        case 0:
-                            z = CreateSumsNoShift128bit(z, currSumPtr, newSumPtr);
-                            break;
-                        case 1:
-                        case 2:
-                        case 3:
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                            z = CreateSumsShiftRight128bit(z, currSumPtr, newSumPtr, currSumIndices.BitIndex - newSumIndices.BitIndex);
-                            break;
-                        default:
-                            break;
+                        Vector128<ulong> unalignedPart = Avx.LoadVector128(currPtr - i - 1);
+                        Vector128<ulong> before = Avx.ShiftRightLogical(unalignedPart, (byte)(BitCount<ulong>() - numberOffset.BitIndex));
+                        Vector128<ulong> after = Avx.ShiftLeftLogical(Avx.LoadVector128(currPtr - i), (byte)numberOffset.BitIndex);
+                        Vector128<ulong> combined = Avx.Or(before, after);
+                        Avx.Store(lastPtr - i, Avx.Or(Avx.LoadVector128(lastPtr - i), combined));
+                    }
+
+                    ulong affter = currPtr[-iterations] << numberOffset.BitIndex;
+                    lastPtr[-iterations] |= affter;
+                }
+            }
+        }
+
+        private static unsafe void CreateSumsVectorized64bit(int z, int number, BitArraySlim newSums)
+        {
+            BitArrayIndices numberOffset = new BitArrayIndices(number);
+
+            int length = ((z + number) / BitCount<ulong>());
+            fixed (ulong* arr = newSums.Bytes)
+            {
+                ulong* lastPtr = arr + length;
+                ulong* currPtr = lastPtr - numberOffset.ByteIndex;
+
+                int iterations = length - numberOffset.ByteIndex;
+                if (numberOffset.BitIndex % BitCount<byte>() == 0)
+                {
+                    int offset = numberOffset.BitIndex / BitCount<byte>();
+                    lastPtr = (ulong*)(((byte*)lastPtr) + offset);
+
+                    for (int i = 0; i <= iterations; i++)
+                    {
+                        lastPtr[-i] |= currPtr[-i];
                     }
                 }
+                else
+                {
+                    for (int i = 0; i < iterations; i++)
+                    {
+                        ulong before = currPtr[-i - 1] >> (BitCount<ulong>() - numberOffset.BitIndex);
+                        ulong after = currPtr[-i] << numberOffset.BitIndex;
+                        ulong combined = before | after;
+                        lastPtr[-i] |= combined;
+                    }
 
-                z += BitCount<Vector128<byte>>();
+                    ulong affter = currPtr[-iterations] << numberOffset.BitIndex;
+                    lastPtr[-iterations] |= affter;
+                }
             }
-
-            return z;
-        }
-
-        private static unsafe int CreateSumsShiftLeft128bit(int z, byte* currSumPtr, byte* newSumPtr, int leftShift)
-        {
-            Vector128<byte> toShift = Avx.LoadDquVector128(currSumPtr);
-            Vector128<byte> moved1ByteLeft = Avx.ShiftLeftLogical128BitLane(toShift, 1);
-            Vector128<byte> nextSet = Avx.Or(Avx.ShiftLeftLogical(toShift.AsInt16(), (byte)leftShift), Avx.ShiftRightLogical(moved1ByteLeft.AsInt16(), (byte)(8 - leftShift))).AsByte();
-            do
-            {
-                Vector128<byte> fromSum = nextSet;
-                currSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
-                toShift = Avx.LoadDquVector128(currSumPtr);
-                moved1ByteLeft = Avx.ShiftLeftLogical128BitLane(toShift, 1);
-                nextSet = Avx.Or(Avx.ShiftLeftLogical(toShift.AsInt16(), (byte)leftShift), Avx.ShiftRightLogical(moved1ByteLeft.AsInt16(), (byte)(8 - leftShift))).AsByte();
-
-                Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
-                newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
-
-                z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
-            } while (z >= BitCount<Vector128<byte>>());
-            Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
-
-            z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
-            return z;
-        }
-
-        private static unsafe int CreateSumsNoShift128bit(int z, byte* currSumPtr, byte* newSumPtr)
-        {
-            Vector128<byte> nextSet = Avx.LoadDquVector128(currSumPtr);
-            do
-            {
-                Vector128<byte> fromSum = nextSet;
-                currSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
-                nextSet = Avx.LoadDquVector128(currSumPtr);
-
-                Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
-                newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
-
-                z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
-            } while (z >= BitCount<Vector128<byte>>());
-            Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
-
-            z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
-            return z;
-        }
-
-        private static unsafe int CreateSumsShiftRight128bit(int z, byte* currSumPtr, byte* newSumPtr, int rightShift)
-        {
-            Vector128<byte> toShift = Avx.LoadDquVector128(currSumPtr);
-            Vector128<byte> moved1ByteRight = Avx.ShiftRightLogical128BitLane(toShift, 1);
-            Vector128<byte> nextSet = Avx.Or(Avx.ShiftRightLogical(toShift.AsInt16(), (byte)rightShift), Avx.ShiftLeftLogical(moved1ByteRight.AsInt16(), (byte)(8 - rightShift))).AsByte();
-            do
-            {
-                Vector128<byte> fromSum = nextSet;
-                currSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
-                toShift = Avx.LoadDquVector128(currSumPtr);
-                moved1ByteRight = Avx.ShiftRightLogical128BitLane(toShift, 1);
-                nextSet = Avx.Or(Avx.ShiftRightLogical(toShift.AsInt16(), (byte)rightShift), Avx.ShiftLeftLogical(moved1ByteRight.AsInt16(), (byte)(8 - rightShift))).AsByte();
-
-                Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), fromSum));
-                newSumPtr -= (sizeof(Vector128<byte>) - sizeof(byte));
-
-                z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
-            } while (z >= BitCount<Vector128<byte>>());
-            Avx.Store(newSumPtr, Avx.Or(Avx.LoadDquVector128(newSumPtr), nextSet));
-
-            z -= (BitCount<Vector128<byte>>() - BitCount<byte>());
-            return z;
         }
 
         private static (int number, int newNumber) CreateCollisionAvoidanceArray(BitArraySlim sums, BestSumsData bestData, PartialSumsData data)
