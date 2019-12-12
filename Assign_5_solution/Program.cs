@@ -103,16 +103,20 @@ namespace Assign_5_solution
         internal class BitArraySlim
         {
             internal readonly ulong[] Bytes;
-            internal readonly int Length;
+            internal int Length;
             private readonly int ArrayLength;
 
-            internal BitArraySlim(int length)
+            internal BitArraySlim(int length, int realLength)
             {
-                this.ArrayLength = (length / BitCount<Vector256<byte>>()) + 2;
+                this.ArrayLength = (realLength / BitCount<Vector256<byte>>()) + 2;
                 this.ArrayLength *= BitCount<Vector256<byte>>() / BitCount<ulong>();
 
                 this.Bytes = new ulong[ArrayLength];
                 this.Length = length;
+            }
+
+            internal BitArraySlim(int length) : this(length, length)
+            {
             }
 
             public ulong this[int index]
@@ -141,6 +145,43 @@ namespace Assign_5_solution
             internal void CopyTo(BitArraySlim copyTo)
             {
                 Array.Copy(Bytes, 0, copyTo.Bytes, 0, ArrayLength);
+            }
+
+            internal void Reuse(int newLength)
+            {
+                Array.Fill(Bytes, 0ul);
+                Length = newLength;
+            }
+        }
+
+        internal readonly struct BitArrayStorage
+        {
+            private readonly Stack<BitArraySlim> Arrays;
+            private readonly int MaxSum;
+
+            internal BitArrayStorage(int maxSum)
+            {
+                this.Arrays = new Stack<BitArraySlim>();
+                this.MaxSum = maxSum;
+            }
+
+            internal BitArraySlim Pop(int length)
+            {
+                if (Arrays.Count == 0)
+                {
+                    return new BitArraySlim(length, MaxSum + 1);
+                }
+                else
+                {
+                    BitArraySlim arr = Arrays.Pop();
+                    arr.Reuse(length);
+                    return arr;
+                }
+            }
+
+            internal void Push(BitArraySlim arr)
+            {
+                Arrays.Push(arr);
             }
         }
 
@@ -195,8 +236,9 @@ namespace Assign_5_solution
             public int SumsCount;
             public int Created;
             public BitArraySlim Sums;
+            public BitArrayStorage Storage;
 
-            internal PartialSumsData()
+            internal PartialSumsData(int maxSum)
             {
                 FoundData = new HashSet<int>();
                 Datas = new BestSumsData();
@@ -204,6 +246,7 @@ namespace Assign_5_solution
                 SumsCount = -1;
                 Created = 0;
                 Sums = null;
+                Storage = new BitArrayStorage(maxSum);
             }
         }
 
@@ -211,16 +254,24 @@ namespace Assign_5_solution
         {
             Array.Sort(numbers);
 
+            int maxSum = 0;
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                maxSum += numbers[i];
+            }
+
+            PartialSumsData data = new PartialSumsData(maxSum);
+
             BitArraySlim currSums = new BitArraySlim(1);
             currSums.ForceSet(0, 1);
 
-            PartialSumsData data = new PartialSumsData();
+
             CreateAllSumsDatas(numbers, currSums, data);
 
             return CreateCollisionAvoidanceArray(data.Sums, data.Datas, data);
         }
 
-        private static void CreateAllSumsDatas(Span<int> numbers, BitArraySlim currSums, PartialSumsData data)
+        private static bool CreateAllSumsDatas(Span<int> numbers, BitArraySlim currSums, PartialSumsData data)
         {
             if (numbers.Length > 1)
             {
@@ -228,11 +279,17 @@ namespace Assign_5_solution
                 Span<int> firstPart = numbers.Slice(0, midPoint);
                 Span<int> secondPart = numbers.Slice(midPoint);
 
-                BitArraySlim secondPartSums = CreatePartialSums(secondPart, currSums);
-                CreateAllSumsDatas(firstPart, secondPartSums, data);
+                BitArraySlim secondPartSums = CreatePartialSums(secondPart, currSums, data);
+                if (!CreateAllSumsDatas(firstPart, secondPartSums, data))
+                {
+                    data.Storage.Push(secondPartSums);
+                }
 
-                BitArraySlim firstPartSums = CreatePartialSums(firstPart, currSums);
-                CreateAllSumsDatas(secondPart, firstPartSums, data);
+                BitArraySlim firstPartSums = CreatePartialSums(firstPart, currSums, data);
+                if (!CreateAllSumsDatas(secondPart, firstPartSums, data))
+                {
+                    data.Storage.Push(firstPartSums);
+                }
             }
             else
             {
@@ -241,7 +298,7 @@ namespace Assign_5_solution
                 int actualSumCount = BoolArrayTrueCount(currSums);
                 if (data.SumsCount - actualSumCount > data.Minuniques)
                 {
-                    return;
+                    return false;
                 }
 
                 int number = numbers[0];
@@ -254,10 +311,17 @@ namespace Assign_5_solution
                         (newData.Data.Uniques == data.Datas.Data.Uniques &&
                             newData.Number < data.Datas.Number))
                     {
+                        if (data.Datas.Data.BitArray != null)
+                        {
+                            data.Storage.Push(data.Datas.Data.BitArray);
+                        }
                         data.Datas = newData;
+                        return true;
                     }
                 }
             }
+
+            return false;
         }
 
         private static int BoolArrayTrueCount(BitArraySlim array)
@@ -271,7 +335,7 @@ namespace Assign_5_solution
             return trueCount;
         }
 
-        private static BitArraySlim CreatePartialSums(Span<int> numbers, BitArraySlim currSums)
+        private static BitArraySlim CreatePartialSums(Span<int> numbers, BitArraySlim currSums, PartialSumsData data)
         {
             int maxSum = currSums.Length;
             for (int i = 0; i < numbers.Length; i++)
@@ -279,7 +343,7 @@ namespace Assign_5_solution
                 maxSum += numbers[i];
             }
 
-            BitArraySlim newSums = new BitArraySlim(maxSum);
+            BitArraySlim newSums = data.Storage.Pop(maxSum);
             currSums.CopyTo(newSums);
 
             int prevMaxSum = currSums.Length - 1;
@@ -329,7 +393,7 @@ namespace Assign_5_solution
 
         private static void CreateAllSums(int number, BitArraySlim currSums, PartialSumsData data)
         {
-            data.Sums = CreatePartialSums(new int[] { number }, currSums);
+            data.Sums = CreatePartialSums(new int[] { number }, currSums,  data);
             data.SumsCount = BoolArrayTrueCount(data.Sums);
         }
 
