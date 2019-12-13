@@ -134,14 +134,16 @@ namespace Assign_5_solution
                 Bytes[indices.ByteIndex] ^= (((ulong)(-(long)val) ^ Bytes[indices.ByteIndex]) & (1ul << indices.BitIndex));
             }
 
-            internal void CopyTo(BitArraySlim copyTo)
+            internal void CopyToAndClearRest(BitArraySlim copyTo)
             {
-                Array.Copy(Bytes, 0, copyTo.Bytes, 0, Bytes.Length);
+                int copyLength = (Length / BitCount<ulong>()) + 1;
+                int fillLength = copyTo.Bytes.Length - copyLength;
+                Array.Copy(Bytes, 0, copyTo.Bytes, 0, copyLength);
+                Array.Fill(copyTo.Bytes, 0ul, copyLength, fillLength);
             }
 
             internal void Reuse(int newLength)
             {
-                Array.Fill(Bytes, 0ul);
                 Length = newLength;
             }
         }
@@ -336,7 +338,8 @@ namespace Assign_5_solution
             }
 
             BitArraySlim newSums = data.Storage.Pop(maxSum);
-            currSums.CopyTo(newSums);
+            currSums.CopyToAndClearRest(newSums);
+
 
             int prevMaxSum = currSums.Length - 1;
             for (int i = 0; i < numbers.Length; i++)
