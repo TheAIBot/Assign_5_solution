@@ -104,14 +104,13 @@ namespace Assign_5_solution
         {
             internal readonly ulong[] Bytes;
             internal int Length;
-            private readonly int ArrayLength;
 
             internal BitArraySlim(int length, int realLength)
             {
-                this.ArrayLength = (realLength / BitCount<Vector256<byte>>()) + 2;
-                this.ArrayLength *= BitCount<Vector256<byte>>() / BitCount<ulong>();
+                int arrayLength = (realLength / BitCount<Vector256<byte>>()) + 2;
+                arrayLength *= BitCount<Vector256<byte>>() / BitCount<ulong>();
 
-                this.Bytes = new ulong[ArrayLength];
+                this.Bytes = new ulong[arrayLength];
                 this.Length = length;
             }
 
@@ -129,13 +128,6 @@ namespace Assign_5_solution
                 }
             }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal void OrSet(int index, ulong val)
-            {
-                BitArrayIndices indices = new BitArrayIndices(index);
-                Bytes[indices.ByteIndex] |= (val << indices.BitIndex);
-            }
-
             internal void ForceSet(int index, ulong val)
             {
                 BitArrayIndices indices = new BitArrayIndices(index);
@@ -144,7 +136,7 @@ namespace Assign_5_solution
 
             internal void CopyTo(BitArraySlim copyTo)
             {
-                Array.Copy(Bytes, 0, copyTo.Bytes, 0, ArrayLength);
+                Array.Copy(Bytes, 0, copyTo.Bytes, 0, Bytes.Length);
             }
 
             internal void Reuse(int newLength)
