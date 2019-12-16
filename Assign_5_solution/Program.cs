@@ -88,6 +88,24 @@ namespace Assign_5_solution
             }
         }
 
+        private static unsafe int GetSizeDiff<T1, T2>() 
+            where T1 : unmanaged 
+            where T2 : unmanaged
+        {
+            return sizeof(T1) / sizeof(T2);
+        }
+
+        private static int GetItemsNeededForBits<T>(int length) where T : unmanaged
+        {
+            int len = length / BitCount<T>();
+            if (length % BitCount<T>() != 0)
+            {
+                len++;
+            }
+
+            return len;
+        }
+
         internal readonly struct BitArrayIndices
         {
             internal readonly int ByteIndex;
@@ -107,8 +125,8 @@ namespace Assign_5_solution
 
             internal BitArraySlim(int length, int realLength)
             {
-                int arrayLength = (realLength / BitCount<Vector256<byte>>()) + 2;
-                arrayLength *= BitCount<Vector256<byte>>() / BitCount<ulong>();
+                int arrayLength = GetItemsNeededForBits<Vector256<byte>>(realLength) + 1;
+                arrayLength *= GetSizeDiff<Vector256<byte>, ulong>();
 
                 this.Bytes = new ulong[arrayLength];
                 this.Length = length;
@@ -344,8 +362,7 @@ namespace Assign_5_solution
             int prevMaxSum = currSums.Length - 1;
             for (int i = 0; i < numbers.Length; i++)
             {
-                CreateSumsVectorized128bit(prevMaxSum, numbers[i], newSums);
-                //CreateSumsVectorized64bit(prevMaxSum, numbers[i], newSums);
+                CreateSumsVectorized(prevMaxSum, numbers[i], newSums);
                 prevMaxSum += numbers[i];
             }
 
@@ -397,7 +414,54 @@ namespace Assign_5_solution
             return sizeof(T) * 8;
         }
 
-        private static unsafe void CreateSumsVectorized128bit(int z, int number, BitArraySlim newSums)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void moveSumsNoShift256bit(ulong* lastPtr, ulong* currPtr)
+        {
+            Avx2.Store(lastPtr, Avx2.Or(Avx2.LoadVector256(lastPtr), Avx2.LoadVector256(currPtr)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void moveSumsNoShift128bit(ulong* lastPtr, ulong* currPtr)
+        {
+            Sse2.Store(lastPtr, Sse2.Or(Sse2.LoadVector128(lastPtr), Sse2.LoadVector128(currPtr)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void moveSumsNoShift64bit(ulong* lastPtr, ulong* currPtr)
+        {
+            *lastPtr |= *currPtr;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void moveSumsWithShift256bit(ulong* lastPtr, ulong* currPtr, int shift)
+        {
+            Vector256<ulong> unalignedPart = Avx2.LoadVector256(currPtr - 1);
+            Vector256<ulong> before = Avx2.ShiftRightLogical(unalignedPart, (byte)(BitCount<ulong>() - shift));
+            Vector256<ulong> after = Avx2.ShiftLeftLogical(Avx2.LoadVector256(currPtr), (byte)shift);
+            Vector256<ulong> combined = Avx2.Or(before, after);
+            Avx2.Store(lastPtr, Avx2.Or(Avx2.LoadVector256(lastPtr), combined));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void moveSumsWithShift128bit(ulong* lastPtr, ulong* currPtr, int shift)
+        {
+            Vector128<ulong> unalignedPart = Sse2.LoadVector128(currPtr - 1);
+            Vector128<ulong> before = Sse2.ShiftRightLogical(unalignedPart, (byte)(BitCount<ulong>() - shift));
+            Vector128<ulong> after = Sse2.ShiftLeftLogical(Sse2.LoadVector128(currPtr), (byte)shift);
+            Vector128<ulong> combined = Sse2.Or(before, after);
+            Sse2.Store(lastPtr, Sse2.Or(Sse2.LoadVector128(lastPtr), combined));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void moveSumsWithShift64bit(ulong* lastPtr, ulong* currPtr, int shift)
+        {
+            ulong before = *(currPtr - 1) >> (BitCount<ulong>() - shift);
+            ulong after = *currPtr << shift;
+            ulong combined = before | after;
+            *lastPtr |= combined;
+        }
+
+        private static unsafe void CreateSumsVectorized(int z, int number, BitArraySlim newSums)
         {
             BitArrayIndices numberOffset = new BitArrayIndices(number);
 
@@ -407,9 +471,22 @@ namespace Assign_5_solution
                 ulong* lastPtr = arr + length;
                 ulong* currPtr = lastPtr - numberOffset.ByteIndex;
 
-                int sizeFromUint = sizeof(Vector128<ulong>) / sizeof(ulong);
+                int sizeFromUint;
+                if (Avx2.IsSupported)
+                {
+                    sizeFromUint = GetSizeDiff<Vector256<ulong>, ulong>();
+                }
+                else if (Sse2.IsSupported)
+                {
+                    sizeFromUint = GetSizeDiff<Vector128<ulong>, ulong>();
+                }
+                else
+                {
+                    sizeFromUint = GetSizeDiff<ulong, ulong>();
+                }
+
                 int iterations = length - numberOffset.ByteIndex;
-                int rest = iterations % sizeFromUint;
+                int rest = (sizeFromUint - (iterations % sizeFromUint)) % sizeFromUint;
                 iterations += rest;
                 lastPtr += rest;
                 currPtr += rest;
@@ -421,55 +498,37 @@ namespace Assign_5_solution
 
                     for (int i = 0; i <= iterations; i += sizeFromUint)
                     {
-                        Avx.Store(lastPtr - i, Avx.Or(Avx.LoadVector128(lastPtr - i), Avx.LoadVector128(currPtr - i)));
+                        if (Avx2.IsSupported)
+                        {
+                            moveSumsNoShift256bit(lastPtr - i, currPtr - i);
+                        }
+                        else if (Sse2.IsSupported)
+                        {
+                            moveSumsNoShift128bit(lastPtr - i, currPtr - i);
+                        }
+                        else
+                        {
+                            moveSumsNoShift64bit(lastPtr - i, currPtr - i);
+                        }
+
                     }
                 }
                 else
                 {
-                    for (int i = 1; i < iterations + 1; i += sizeFromUint)
+                    for (int i = -1; i <= iterations - 1; i += sizeFromUint)
                     {
-                        Vector128<ulong> unalignedPart = Avx.LoadVector128(currPtr - i - 1);
-                        Vector128<ulong> before = Avx.ShiftRightLogical(unalignedPart, (byte)(BitCount<ulong>() - numberOffset.BitIndex));
-                        Vector128<ulong> after = Avx.ShiftLeftLogical(Avx.LoadVector128(currPtr - i), (byte)numberOffset.BitIndex);
-                        Vector128<ulong> combined = Avx.Or(before, after);
-                        Avx.Store(lastPtr - i, Avx.Or(Avx.LoadVector128(lastPtr - i), combined));
-                    }
-
-                    ulong affter = currPtr[-iterations] << numberOffset.BitIndex;
-                    lastPtr[-iterations] |= affter;
-                }
-            }
-        }
-
-        private static unsafe void CreateSumsVectorized64bit(int z, int number, BitArraySlim newSums)
-        {
-            BitArrayIndices numberOffset = new BitArrayIndices(number);
-
-            int length = ((z + number) / BitCount<ulong>());
-            fixed (ulong* arr = newSums.Bytes)
-            {
-                ulong* lastPtr = arr + length;
-                ulong* currPtr = lastPtr - numberOffset.ByteIndex;
-
-                int iterations = length - numberOffset.ByteIndex;
-                if (numberOffset.BitIndex % BitCount<byte>() == 0)
-                {
-                    int offset = numberOffset.BitIndex / BitCount<byte>();
-                    lastPtr = (ulong*)(((byte*)lastPtr) + offset);
-
-                    for (int i = 0; i <= iterations; i++)
-                    {
-                        lastPtr[-i] |= currPtr[-i];
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < iterations; i++)
-                    {
-                        ulong before = currPtr[-i - 1] >> (BitCount<ulong>() - numberOffset.BitIndex);
-                        ulong after = currPtr[-i] << numberOffset.BitIndex;
-                        ulong combined = before | after;
-                        lastPtr[-i] |= combined;
+                        if (Avx2.IsSupported)
+                        {
+                            moveSumsWithShift256bit(lastPtr - i, currPtr - i, numberOffset.BitIndex);
+                        }
+                        else if (Sse2.IsSupported)
+                        {
+                            moveSumsWithShift128bit(lastPtr - i, currPtr - i, numberOffset.BitIndex);
+                        }
+                        else
+                        {
+                            moveSumsWithShift64bit(lastPtr - i, currPtr - i, numberOffset.BitIndex);
+                        }
                     }
 
                     ulong affter = currPtr[-iterations] << numberOffset.BitIndex;
