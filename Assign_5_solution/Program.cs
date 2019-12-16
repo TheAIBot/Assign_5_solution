@@ -154,17 +154,23 @@ namespace Assign_5_solution
 
             internal void CopyToAndClearRest(BitArraySlim copyTo)
             {
-                int copyLength = (Length / BitCount<ulong>()) + 1;
-                int fillLength = copyTo.Bytes.Length - copyLength;
-                Array.Copy(Bytes, 0, copyTo.Bytes, 0, copyLength);
-                Array.Fill(copyTo.Bytes, 0ul, copyLength, fillLength);
+                int copyLength = GetCurrentArrayLength();
+                int fillLength = copyTo.GetCurrentArrayLength() - copyLength;
+                Array.Copy(Bytes, copyTo.Bytes, copyLength);
+
+                Array.Fill(copyTo.Bytes, 0ul, copyLength, fillLength + GetSizeDiff<Vector256<byte>, ulong>());
             }
 
             internal void Reuse(int newLength)
             {
                 Length = newLength;
             }
-        }
+
+            internal int GetCurrentArrayLength()
+	        {
+		        return GetItemsNeededForBits<ulong>(Length);
+	        }
+    }
 
         internal readonly struct BitArrayStorage
         {
@@ -339,7 +345,6 @@ namespace Assign_5_solution
         private static int BoolArrayTrueCount(BitArraySlim array)
         {
             int trueCount = 0;
-            for (int i = 0; i < array.Bytes.Length; i++)
             {
                 trueCount += BitOperations.PopCount(array.Bytes[i]);
             }
