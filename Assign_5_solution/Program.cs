@@ -345,6 +345,8 @@ namespace Assign_5_solution
         private static int BoolArrayTrueCount(BitArraySlim array)
         {
             int trueCount = 0;
+            int elementCount = array.GetCurrentArrayLength();
+            for (int i = 0; i < elementCount; i++)
             {
                 trueCount += BitOperations.PopCount(array.Bytes[i]);
             }
